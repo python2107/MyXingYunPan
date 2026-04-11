@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的云盘</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: url("{{ url_for('static', filename='background.png') }}") no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 头部半透 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            padding: 1.2rem 2rem;
+            border-radius: 2rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-area i {
+            font-size: 2rem;
+            color: #3b82f6;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 8px;
+            border-radius: 18px;
+        }
+
+        .logo-area h1 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #2d3e5f);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem;
+            border-radius: 60px;
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(203, 213, 225, 0.6);
+            padding: 6px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.9);
+            border: none;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: rgba(220, 38, 38, 0.95);
+        }
+
+        /* 上传卡片半透 */
+        .upload-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 1.8rem;
+            padding: 1.8rem 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(203, 213, 225, 0.8);
+            border-radius: 1.5rem;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            background: rgba(250, 252, 255, 0.6);
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #3b82f6;
+            background: rgba(240, 247, 255, 0.8);
+        }
+
+        .upload-area i {
+            font-size: 3rem;
+            color: #3b82f6;
+            margin-bottom: 12px;
+        }
+
+        .upload-progress {
+            margin-top: 1.2rem;
+            background: rgba(226, 232, 240, 0.8);
+            border-radius: 40px;
+            height: 8px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #3b82f6;
+            transition: width 0.2s;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .toolbar h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .refresh-btn {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(203, 213, 225, 0.6);
+            padding: 8px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.3rem;
+        }
+
+        /* 文件卡片半透 */
+        .file-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(4px);
+            border-radius: 1.4rem;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(238, 242, 248, 0.6);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .file-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -8px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.92);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-icon {
+            font-size: 1.8rem;
+        }
+
+        .file-details {
+            overflow: hidden;
+        }
+
+        .file-name {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-meta {
+            font-size: 0.7rem;
+            color: #5b6e8c;
+            margin-top: 4px;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            background: rgba(255, 255, 255, 0.7);
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 40px;
+            transition: 0.2s;
+        }
+
+        .btn-icon.download:hover {
+            background: rgba(230, 240, 255, 0.9);
+            color: #2563eb;
+        }
+
+        .btn-icon.delete:hover {
+            background: rgba(254, 226, 226, 0.9);
+            color: #dc2626;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 2rem;
+            color: #5a6e8a;
+        }
+
+        /* 模态框半透 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+            padding: 1rem;
+            position: relative;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 80vh;
+        }
+
+        .preview-text {
+            white-space: pre-wrap;
+            font-family: monospace;
+            padding: 1rem;
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+
+        @media (max-width: 640px) {
+            body { padding: 1rem; }
+            .file-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo-area">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <h1>星云盘 · 个人空间</h1>
+        </div>
+        <div class="user-info">
+            <span><i class="fas fa-user"></i> <span id="usernameDisplay"></span></span>
+            <button id="profileBtn" class="btn-outline"><i class="fas fa-user-cog"></i> 个人设置</button>
+            <button id="logoutBtn" class="logout-btn">登出</button>
+        </div>
+    </div>
+
+    <!-- 上传卡片 -->
+    <div class="upload-card">
+        <div class="upload-area" id="uploadArea">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>点击或拖拽文件到此区域上传</p>
+            <span class="upload-hint">支持任意格式，单文件上限 256 MB</span>
+            <input type="file" id="fileInput" multiple style="display: none;">
+        </div>
+        <div class="upload-progress" id="uploadProgress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+
+    <!-- 文件列表 -->
+    <div class="toolbar">
+        <h2><i class="fas fa-folder-open"></i> 我的文件</h2>
+        <button id="refreshBtn" class="refresh-btn"><i class="fas fa-sync-alt"></i> 刷新</button>
+    </div>
+    <div id="fileListContainer" class="file-grid">
+        <div class="empty-state"><i class="fas fa-inbox" style="font-size: 3rem;"></i><p>暂无文件</p></div>
+    </div>
+</div>
+
+<!-- 模态框预览 -->
+<div id="previewModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close">&times;</span>
+        <div id="previewContent"></div>
+    </div>
+</div>
+
+<div id="toastMsg" class="toast-msg"></div>
+
+<!-- 个人设置模态框 -->
+<div id="profileModal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+        <span class="modal-close" id="closeProfileModal">&times;</span>
+        <h3 style="margin-bottom: 1rem;">账户设置</h3>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div>
+                <label>修改密码</label>
+                <input type="password" id="oldPassword" placeholder="原密码" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.8); border: 1px solid rgba(203,213,225,0.6); border-radius: 40px;">
+                <input type="password" id="newPassword" placeholder="新密码 (至少6位)" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.8); border: 1px solid rgba(203,213,225,0.6); border-radius: 40px;">
+                <button id="changePwdBtn" style="margin-top: 0.5rem; width: 100%; background: rgba(59,130,246,0.9); border: none; padding: 8px; border-radius: 40px; color: white; cursor: pointer;">修改密码</button>
+                <div id="pwdMsg" style="color: red; font-size: 0.8rem;"></div>
+            </div>
+            <hr>
+            <div>
+                <button id="deleteAccountBtn" style="background: rgba(220,38,38,0.9); color: white; border: none; padding: 0.5rem; width: 100%; border-radius: 40px; cursor: pointer;">注销账号</button>
+                <div id="deleteMsg" style="color: red; font-size: 0.8rem;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div style="text-align: center; margin-top: 2rem; padding: 1rem;">
+    <a href="/privacy" style="color: #3b82f6; text-decoration: none; margin: 0 10px;">隐私政策</a> |
+    <a href="/terms" style="color: #3b82f6; text-decoration: none; margin: 0 10px;">用户协议</a>
+</div>
+
+<script>
+    const usernameDisplay = document.getElementById('usernameDisplay');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const profileBtn = document.getElementById('profileBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const fileInput = document.getElementById('fileInput');
+    const uploadArea = document.getElementById('uploadArea');
+    const uploadProgressDiv = document.getElementById('uploadProgress');
+    const progressBar = document.getElementById('progressBar');
+    const fileListContainer = document.getElementById('fileListContainer');
+    const previewModal = document.getElementById('previewModal');
+    const previewContent = document.getElementById('previewContent');
+    const profileModal = document.getElementById('profileModal');
+    const changePwdBtn = document.getElementById('changePwdBtn');
+    const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+    const pwdMsg = document.getElementById('pwdMsg');
+    const deleteMsg = document.getElementById('deleteMsg');
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.textContent = msg;
+        toast.style.backgroundColor = isError ? 'rgba(185, 28, 28, 0.9)' : 'rgba(30, 41, 59, 0.9)';
+        toast.style.opacity = '1';
+        setTimeout(() => toast.style.opacity = '0', 2800);
+    }
+
+    async function fetchUserInfo() {
+        try {
+            const res = await fetch('/api/check_auth');
+            const data = await res.json();
+            if (data.success) {
+                usernameDisplay.textContent = data.user.username;
+            } else {
+                window.location.href = '/login';
+            }
+        } catch (err) {
+            showToast('无法获取用户信息', true);
+        }
+    }
+
+    async function loadFileList() {
+        try {
+            const res = await fetch('/api/files');
+            if (!res.ok) {
+                if (res.status === 401) window.location.href = '/login';
+                throw new Error('加载失败');
+            }
+            const data = await res.json();
+            if (data.success) {
+                renderFileList(data.files);
+            } else {
+                showToast(data.error, true);
+            }
+        } catch (err) {
+            showToast('加载文件列表失败', true);
+        }
+    }
+
+    function getFileIcon(filename) {
+        const ext = filename.split('.').pop().toLowerCase();
+        const icons = {
+            pdf: 'fa-file-pdf', jpg: 'fa-file-image', png: 'fa-file-image', gif: 'fa-file-image',
+            mp4: 'fa-file-video', mp3: 'fa-file-audio', zip: 'fa-file-archive',
+            doc: 'fa-file-word', docx: 'fa-file-word', xls: 'fa-file-excel', txt: 'fa-file-alt'
+        };
+        const icon = icons[ext] || 'fa-file';
+        return `<i class="fas ${icon}" style="color:#3b82f6;"></i>`;
+    }
+
+    function renderFileList(files) {
+        if (!files.length) {
+            fileListContainer.innerHTML = `<div class="empty-state"><i class="fas fa-inbox" style="font-size: 3rem;"></i><p>暂无文件</p></div>`;
+            return;
+        }
+        const html = files.map(file => `
+            <div class="file-card" data-name="${escapeAttr(file.name)}">
+                <div class="file-info">
+                    <div class="file-icon">${getFileIcon(file.name)}</div>
+                    <div class="file-details">
+                        <div class="file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</div>
+                        <div class="file-meta">${file.size_human} · ${file.modified_str}</div>
+                    </div>
+                </div>
+                <div class="file-actions">
+                    <button class="btn-icon download" data-file="${escapeAttr(file.name)}"><i class="fas fa-download"></i></button>
+                    <button class="btn-icon delete" data-file="${escapeAttr(file.name)}"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            </div>
+        `).join('');
+        fileListContainer.innerHTML = html;
+
+        document.querySelectorAll('.file-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (e.target.closest('.download') || e.target.closest('.delete')) return;
+                const filename = card.getAttribute('data-name');
+                previewFile(filename);
+            });
+        });
+        document.querySelectorAll('.download').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const name = btn.getAttribute('data-file');
+                window.location.href = `/api/download/${encodeURIComponent(name)}`;
+            });
+        });
+        document.querySelectorAll('.delete').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const name = btn.getAttribute('data-file');
+                if (confirm(`确定删除 "${name}" 吗？`)) {
+                    try {
+                        const res = await fetch(`/api/delete/${encodeURIComponent(name)}`, {method: 'DELETE'});
+                        const data = await res.json();
+                        if (data.success) {
+                            showToast('删除成功');
+                            loadFileList();
+                        } else {
+                            showToast(data.error, true);
+                        }
+                    } catch (err) {
+                        showToast('删除失败', true);
+                    }
+                }
+            });
+        });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    function escapeAttr(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    async function previewFile(filename) {
+        try {
+            const res = await fetch(`/api/view/${encodeURIComponent(filename)}`);
+            const data = await res.json();
+            if (data.success) {
+                if (data.type === 'image') {
+                    previewContent.innerHTML = `<img src="data:${data.mime};base64,${data.content}" class="preview-image">`;
+                } else if (data.type === 'text') {
+                    previewContent.innerHTML = `<pre class="preview-text">${escapeHtml(data.content)}</pre>`;
+                } else {
+                    previewContent.innerHTML = `<p>无法在线预览，<a href="${data.download_url}" target="_blank">点击下载</a></p>`;
+                }
+                previewModal.style.display = 'flex';
+            } else {
+                if (data.download_url) {
+                    window.location.href = data.download_url;
+                } else {
+                    showToast('无法预览此文件', true);
+                }
+            }
+        } catch (err) {
+            showToast('预览失败', true);
+        }
+    }
+
+    async function uploadFiles(files) {
+        if (!files.length) return;
+        uploadProgressDiv.style.display = 'block';
+        progressBar.style.width = '0%';
+        let successCount = 0, failCount = 0;
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const formData = new FormData();
+            formData.append('file', file);
+            try {
+                const res = await fetch('/api/upload', {method: 'POST', body: formData});
+                const data = await res.json();
+                if (data.success) successCount++;
+                else failCount++;
+            } catch (err) {
+                failCount++;
+            }
+            progressBar.style.width = `${((i+1)/files.length)*100}%`;
+        }
+        uploadProgressDiv.style.display = 'none';
+        progressBar.style.width = '0%';
+        if (successCount) showToast(`成功上传 ${successCount} 个文件`);
+        if (failCount) showToast(`${failCount} 个文件上传失败`, true);
+        loadFileList();
+        fileInput.value = '';
+    }
+
+    profileBtn.addEventListener('click', () => {
+        profileModal.style.display = 'flex';
+    });
+    document.querySelectorAll('.modal-close').forEach(close => {
+        close.addEventListener('click', () => {
+            previewModal.style.display = 'none';
+            profileModal.style.display = 'none';
+        });
+    });
+    window.addEventListener('click', (e) => {
+        if (e.target === previewModal) previewModal.style.display = 'none';
+        if (e.target === profileModal) profileModal.style.display = 'none';
+    });
+
+    changePwdBtn.addEventListener('click', async () => {
+        const oldPwd = document.getElementById('oldPassword').value;
+        const newPwd = document.getElementById('newPassword').value;
+        if (!oldPwd || !newPwd) {
+            pwdMsg.textContent = '请填写完整';
+            return;
+        }
+        if (newPwd.length < 6) {
+            pwdMsg.textContent = '新密码至少6位';
+            return;
+        }
+        try {
+            const res = await fetch('/api/change_password', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({old_password: oldPwd, new_password: newPwd})
+            });
+            const data = await res.json();
+            if (data.success) {
+                pwdMsg.style.color = 'green';
+                pwdMsg.textContent = '密码修改成功';
+                document.getElementById('oldPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                setTimeout(() => pwdMsg.textContent = '', 2000);
+            } else {
+                pwdMsg.style.color = 'red';
+                pwdMsg.textContent = data.error;
+            }
+        } catch (err) {
+            pwdMsg.textContent = '请求失败';
+        }
+    });
+
+    deleteAccountBtn.addEventListener('click', async () => {
+        if (confirm('确定要注销账号吗？所有文件将被永久删除！')) {
+            try {
+                const res = await fetch('/api/delete_account', {method: 'POST'});
+                const data = await res.json();
+                if (data.success) {
+                    showToast('账号已注销，正在跳转...');
+                    setTimeout(() => window.location.href = '/login', 1500);
+                } else {
+                    deleteMsg.textContent = data.error;
+                }
+            } catch (err) {
+                deleteMsg.textContent = '注销失败';
+            }
+        }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+        await fetch('/api/logout', {method: 'POST'});
+        window.location.href = '/login';
+    });
+    refreshBtn.addEventListener('click', loadFileList);
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', e => e.preventDefault());
+    uploadArea.addEventListener('drop', e => {
+        e.preventDefault();
+        uploadFiles(Array.from(e.dataTransfer.files));
+    });
+    fileInput.addEventListener('change', e => {
+        if (e.target.files.length) uploadFiles(Array.from(e.target.files));
+    });
+
+    fetchUserInfo();
+    loadFileList();
+</script>
+</body>
+</html>

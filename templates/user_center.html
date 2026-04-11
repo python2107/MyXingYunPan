@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - 星云盘</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: url("{{ url_for('static', filename='background.png') }}") no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        /* 头部 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            padding: 1rem 2rem;
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-area i {
+            font-size: 2rem;
+            color: #3b82f6;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 8px;
+            border-radius: 18px;
+        }
+        .logo-area h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #1e293b, #2d3e5f);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem;
+            border-radius: 60px;
+        }
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.9);
+            border: none;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+        /* 主布局：两列 */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 1.5rem;
+        }
+        /* 侧边栏卡片通用样式 */
+        .card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #3b82f6;
+            padding-left: 0.8rem;
+        }
+        /* 右侧主内容 */
+        .main-content {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .tab-buttons {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(203, 213, 225, 0.6);
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 40px;
+            transition: 0.2s;
+            color: #334155;
+        }
+        .tab-btn.active {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .tab-pane {
+            display: none;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+        /* 表单元素 */
+        input, textarea, select {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(203, 213, 225, 0.6);
+            border-radius: 40px;
+            padding: 8px 16px;
+            width: 100%;
+            margin-bottom: 0.8rem;
+            outline: none;
+        }
+        button {
+            background: rgba(59, 130, 246, 0.9);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover {
+            background: rgba(37, 99, 235, 0.95);
+        }
+        .danger-btn {
+            background: rgba(239, 68, 68, 0.9);
+        }
+        .danger-btn:hover {
+            background: rgba(220, 38, 38, 0.95);
+        }
+        .file-item, .friend-item, .msg-item {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 1rem;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .file-actions button, .friend-actions button {
+            margin-left: 0.5rem;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+        }
+        .chat-box {
+            height: 300px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 1rem;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+        .msg-bubble {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 1rem;
+            max-width: 80%;
+        }
+        .msg-sent {
+            background: #3b82f6;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        .msg-received {
+            background: rgba(255, 255, 255, 0.8);
+            color: #1e293b;
+        }
+        .badge {
+            background: #f59e0b;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .mt-2 { margin-top: 0.8rem; }
+        .text-center { text-align: center; }
+        .toast-msg {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        @media (max-width: 768px) {
+            .dashboard { grid-template-columns: 1fr; }
+            body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo-area">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <h1>星云盘 · 个人中心</h1>
+        </div>
+        <div class="user-info">
+            <span><i class="fas fa-user"></i> <span id="usernameDisplay"></span></span>
+            <span><i class="fas fa-coins"></i> <span id="coinBalance">0</span> 星币</span>
+            <button id="logoutBtn" class="logout-btn">登出</button>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <!-- 左侧边栏 -->
+        <div class="sidebar">
+            <div class="card">
+                <h3><i class="fas fa-chart-line"></i> 账户概览</h3>
+                <div><strong>用户名：</strong> <span id="profileUsername"></span></div>
+                <div><strong>注册时间：</strong> <span id="joinedAt"></span></div>
+                <div><strong>存储容量：</strong> <span id="capacityUsed"></span> MB / <span id="capacityTotal"></span> MB</div>
+                <div><strong>星币：</strong> <span id="sidebarCoins"></span></div>
+                <button id="signInBtn" class="mt-2"><i class="fas fa-calendar-check"></i> 每日签到 (+10星币)</button>
+                <div class="mt-2">
+                    <label>兑换容量：</label>
+                    <div class="flex-between">
+                        <input type="number" id="exchangeCoins" placeholder="星币数量" style="width: 60%;">
+                        <button id="exchangeBtn">兑换</button>
+                    </div>
+                    <small>1星币 = 0.5MB</small>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-users"></i> 好友</h3>
+                <div class="flex-between">
+                    <input type="text" id="searchUserInput" placeholder="搜索用户..." style="width: 70%;">
+                    <button id="searchUserBtn">搜索</button>
+                </div>
+                <div id="searchResults" style="max-height: 150px; overflow-y: auto; margin-top: 0.5rem;"></div>
+                <hr>
+                <div><strong>好友列表</strong></div>
+                <div id="friendsList" style="max-height: 200px; overflow-y: auto;"></div>
+                <div><strong>好友请求</strong></div>
+                <div id="pendingRequests"></div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-comments"></i> 聊天</h3>
+                <select id="chatFriendSelect">
+                    <option value="">选择好友</option>
+                </select>
+                <div id="chatMessages" class="chat-box"></div>
+                <div class="flex-between">
+                    <input type="text" id="messageInput" placeholder="输入消息..." style="width: 75%;">
+                    <button id="sendMsgBtn">发送</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧主内容区域（标签页） -->
+        <div class="main-content">
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="files">我的文件</button>
+                <button class="tab-btn" data-tab="collections">我的收藏</button>
+                <button class="tab-btn" data-tab="settings">账户设置</button>
+                <button class="tab-btn" data-tab="communityLink">🌐 社区</button>
+            </div>
+
+            <!-- 我的文件 -->
+            <div id="filesTab" class="tab-pane active">
+                <div class="flex-between">
+                    <h3>文件管理</h3>
+                    <label style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="uploadPublicCheckbox"> 公开此文件
+                        <button id="uploadBtn"><i class="fas fa-upload"></i> 上传文件</button>
+                    </label>
+                </div>
+                <input type="file" id="fileInput" style="display: none;" multiple>
+                <div id="myFilesList"></div>
+            </div>
+
+            <!-- 我的收藏 -->
+            <div id="collectionsTab" class="tab-pane">
+                <h3>收藏的文件</h3>
+                <div id="collectionsList"></div>
+            </div>
+
+            <!-- 账户设置 -->
+            <div id="settingsTab" class="tab-pane">
+                <h3>修改密码</h3>
+                <input type="password" id="oldPassword" placeholder="原密码">
+                <input type="password" id="newPassword" placeholder="新密码 (至少6位)">
+                <button id="changePwdBtn">修改密码</button>
+                <div id="pwdMsg" style="color: red; margin-top: 0.5rem;"></div>
+                <hr class="mt-2">
+                <h3>注销账号</h3>
+                <button id="deleteAccountBtn" class="danger-btn">⚠️ 永久注销账号</button>
+                <div id="deleteMsg" style="color: red; margin-top: 0.5rem;"></div>
+            </div>
+
+            <!-- 社区链接（跳转） -->
+            <div id="communityLinkTab" class="tab-pane text-center">
+                <p>浏览其他用户分享的公开文件，点赞收藏可获得星币奖励。</p>
+                <button onclick="window.location.href='/community'">进入社区 →</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toastMsg" class="toast-msg"></div>
+
+<script>
+    // 全局变量
+    let currentFriendId = null;
+    let messagePollInterval = null;
+
+    // 辅助函数
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.textContent = msg;
+        toast.style.backgroundColor = isError ? 'rgba(185, 28, 28, 0.9)' : 'rgba(30, 41, 59, 0.9)';
+        toast.style.opacity = '1';
+        setTimeout(() => toast.style.opacity = '0', 2800);
+    }
+
+    // 加载用户基本信息
+    async function loadUserInfo() {
+        try {
+            const res = await fetch('/api/user/info');
+            const data = await res.json();
+            if (data.success) {
+                const u = data.user;
+                document.getElementById('profileUsername').innerText = u.username;
+                document.getElementById('joinedAt').innerText = new Date(u.joined_at).toLocaleString();
+                document.getElementById('capacityUsed').innerText = u.capacity_used_mb;
+                document.getElementById('capacityTotal').innerText = u.capacity_total_mb;
+                document.getElementById('sidebarCoins').innerText = u.coins;
+                document.getElementById('coinBalance').innerText = u.coins;
+                document.getElementById('usernameDisplay').innerText = u.username;
+            } else {
+                showToast('加载用户信息失败', true);
+            }
+        } catch (err) {
+            showToast('网络错误', true);
+        }
+    }
+
+    // 加载星币余额（单独刷新）
+    async function refreshCoins() {
+        const res = await fetch('/api/user/coins');
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('sidebarCoins').innerText = data.coins;
+            document.getElementById('coinBalance').innerText = data.coins;
+        }
+    }
+
+    // 每日签到
+    document.getElementById('signInBtn').addEventListener('click', async () => {
+        const res = await fetch('/api/user/sign_in', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            showToast(`签到成功！获得 ${data.gained} 星币`);
+            refreshCoins();
+            loadUserInfo(); // 刷新容量等信息
+        } else {
+            showToast(data.error || '签到失败', true);
+        }
+    });
+
+    // 兑换容量
+    document.getElementById('exchangeBtn').addEventListener('click', async () => {
+        const coins = parseInt(document.getElementById('exchangeCoins').value);
+        if (isNaN(coins) || coins <= 0) {
+            showToast('请输入正整数的星币数量', true);
+            return;
+        }
+        const res = await fetch('/api/user/exchange_capacity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ coins })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(`兑换成功！获得 ${data.mb_gained} MB 容量`);
+            refreshCoins();
+            loadUserInfo();
+            document.getElementById('exchangeCoins').value = '';
+        } else {
+            showToast(data.error, true);
+        }
+    });
+
+    // 文件管理：加载我的文件
+    async function loadMyFiles() {
+        const res = await fetch('/api/files');
+        const data = await res.json();
+        if (data.success && data.files) {
+            renderFiles(data.files);
+        } else {
+            document.getElementById('myFilesList').innerHTML = '<p>暂无文件</p>';
+        }
+    }
+
+    function renderFiles(files) {
+        if (!files.length) {
+            document.getElementById('myFilesList').innerHTML = '<p>暂无文件</p>';
+            return;
+        }
+        let html = '';
+        for (let f of files) {
+            html += `
+                <div class="file-item">
+                    <div><i class="fas fa-file"></i> <strong>${escapeHtml(f.name)}</strong><br>
+                    <small>${f.size_human} · ${f.is_public ? '公开' : '私密'} · 👍 ${f.likes} · ⭐ ${f.collections}</small></div>
+                    <div class="file-actions">
+                        <button onclick="togglePublic(${f.id})">${f.is_public ? '设为私密' : '设为公开'}</button>
+                        <button onclick="deleteFile(${f.id})" class="danger-btn">删除</button>
+                    </div>
+                </div>
+            `;
+        }
+        document.getElementById('myFilesList').innerHTML = html;
+    }
+
+    window.togglePublic = async function(fileId) {
+        const res = await fetch(`/api/file/toggle_public/${fileId}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            showToast(`已${data.is_public ? '公开' : '私密'}`);
+            loadMyFiles();
+        } else {
+            showToast(data.error, true);
+        }
+    };
+
+    window.deleteFile = async function(fileId) {
+        if (!confirm('确定删除此文件？')) return;
+        const res = await fetch(`/api/delete/${fileId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+            showToast('删除成功');
+            loadMyFiles();
+        } else {
+            showToast(data.error, true);
+        }
+    };
+
+    // 上传文件
+    document.getElementById('uploadBtn').addEventListener('click', () => {
+        document.getElementById('fileInput').click();
+    });
+    document.getElementById('fileInput').addEventListener('change', async (e) => {
+        const files = e.target.files;
+        if (!files.length) return;
+        const isPublic = document.getElementById('uploadPublicCheckbox').checked ? 1 : 0;
+        for (let file of files) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('is_public', isPublic);
+            try {
+                const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`上传成功，获得星币奖励`);
+                    loadMyFiles();
+                    refreshCoins();
+                    loadUserInfo();
+                } else {
+                    showToast(data.error, true);
+                }
+            } catch (err) {
+                showToast('上传失败', true);
+            }
+        }
+        document.getElementById('fileInput').value = '';
+    });
+
+    // 收藏列表
+    async function loadCollections() {
+        const res = await fetch('/api/user/my_collections');
+        const data = await res.json();
+        if (data.success && data.files) {
+            let html = '';
+            for (let f of data.files) {
+                html += `<div class="file-item">
+                    <div><strong>${escapeHtml(f.name)}</strong><br><small>上传者: ${f.uploader} · ${f.size_human}</small></div>
+                    <div><a href="${f.download_url}" target="_blank">下载</a></div>
+                </div>`;
+            }
+            document.getElementById('collectionsList').innerHTML = html || '<p>暂无收藏</p>';
+        } else {
+            document.getElementById('collectionsList').innerHTML = '<p>暂无收藏</p>';
+        }
+    }
+
+    // 好友相关
+    async function loadFriends() {
+        const res = await fetch('/api/friends');
+        const data = await res.json();
+        if (data.success) {
+            // 好友列表
+            let friendsHtml = '';
+            for (let f of data.friends) {
+                friendsHtml += `<div class="friend-item">
+                    <span>${escapeHtml(f.username)}</span>
+                    <button onclick="selectChatFriend(${f.id}, '${escapeHtml(f.username)}')">聊天</button>
+                </div>`;
+            }
+            document.getElementById('friendsList').innerHTML = friendsHtml || '<p>暂无好友</p>';
+            // 填充聊天选择下拉框
+            const select = document.getElementById('chatFriendSelect');
+            select.innerHTML = '<option value="">选择好友</option>';
+            for (let f of data.friends) {
+                select.innerHTML += `<option value="${f.id}">${escapeHtml(f.username)}</option>`;
+            }
+            // 待处理请求
+            let pendingHtml = '';
+            for (let req of data.pending_requests) {
+                pendingHtml += `<div class="friend-item">
+                    <span>${escapeHtml(req.username)} 请求添加好友</span>
+                    <button onclick="acceptRequest(${req.request_id})">接受</button>
+                </div>`;
+            }
+            document.getElementById('pendingRequests').innerHTML = pendingHtml || '<p>暂无请求</p>';
+        }
+    }
+
+    window.selectChatFriend = function(id, username) {
+        currentFriendId = id;
+        document.getElementById('chatFriendSelect').value = id;
+        loadMessages();
+        if (messagePollInterval) clearInterval(messagePollInterval);
+        messagePollInterval = setInterval(loadMessages, 3000);
+    };
+    document.getElementById('chatFriendSelect').addEventListener('change', (e) => {
+        const id = parseInt(e.target.value);
+        if (id) {
+            currentFriendId = id;
+            loadMessages();
+            if (messagePollInterval) clearInterval(messagePollInterval);
+            messagePollInterval = setInterval(loadMessages, 3000);
+        } else {
+            currentFriendId = null;
+            if (messagePollInterval) clearInterval(messagePollInterval);
+        }
+    });
+
+    async function loadMessages() {
+        if (!currentFriendId) return;
+        const res = await fetch(`/api/messages?friend_id=${currentFriendId}`);
+        const data = await res.json();
+        if (data.success) {
+            const chatDiv = document.getElementById('chatMessages');
+            let html = '';
+            for (let msg of data.messages) {
+                const isSent = msg.sender_id == currentUserId;
+                html += `<div class="msg-bubble ${isSent ? 'msg-sent' : 'msg-received'}">
+                            ${escapeHtml(msg.content)}<br><small>${new Date(msg.time).toLocaleTimeString()}</small>
+                         </div>`;
+            }
+            chatDiv.innerHTML = html;
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+    }
+
+    async function sendMessage() {
+        if (!currentFriendId) {
+            showToast('请先选择好友', true);
+            return;
+        }
+        const content = document.getElementById('messageInput').value.trim();
+        if (!content) return;
+        const res = await fetch('/api/messages/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ receiver_id: currentFriendId, content })
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('messageInput').value = '';
+            loadMessages();
+        } else {
+            showToast(data.error, true);
+        }
+    }
+    document.getElementById('sendMsgBtn').addEventListener('click', sendMessage);
+
+    // 搜索用户并添加好友
+    document.getElementById('searchUserBtn').addEventListener('click', async () => {
+        const query = document.getElementById('searchUserInput').value.trim();
+        if (query.length < 2) return;
+        const res = await fetch(`/api/friends/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        if (data.success && data.users.length) {
+            let html = '';
+            for (let u of data.users) {
+                html += `<div class="friend-item">
+                    <span>${escapeHtml(u.username)}</span>
+                    <button onclick="sendFriendRequest(${u.id})">添加好友</button>
+                </div>`;
+            }
+            document.getElementById('searchResults').innerHTML = html;
+        } else {
+            document.getElementById('searchResults').innerHTML = '<p>未找到用户</p>';
+        }
+    });
+
+    window.sendFriendRequest = async function(toUserId) {
+        const res = await fetch('/api/friends/request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ to_user_id: toUserId })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('好友请求已发送');
+            document.getElementById('searchResults').innerHTML = '';
+        } else {
+            showToast(data.error, true);
+        }
+    };
+
+    window.acceptRequest = async function(requestId) {
+        const res = await fetch('/api/friends/accept', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ request_id: requestId })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('已添加好友');
+            loadFriends();
+        } else {
+            showToast(data.error, true);
+        }
+    };
+
+    // 修改密码
+    document.getElementById('changePwdBtn').addEventListener('click', async () => {
+        const oldPwd = document.getElementById('oldPassword').value;
+        const newPwd = document.getElementById('newPassword').value;
+        if (!oldPwd || !newPwd) {
+            document.getElementById('pwdMsg').innerText = '请填写完整';
+            return;
+        }
+        if (newPwd.length < 6) {
+            document.getElementById('pwdMsg').innerText = '新密码至少6位';
+            return;
+        }
+        const res = await fetch('/api/user/change_password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ old_password: oldPwd, new_password: newPwd })
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('pwdMsg').style.color = 'green';
+            document.getElementById('pwdMsg').innerText = '修改成功';
+            document.getElementById('oldPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            setTimeout(() => document.getElementById('pwdMsg').innerText = '', 2000);
+        } else {
+            document.getElementById('pwdMsg').style.color = 'red';
+            document.getElementById('pwdMsg').innerText = data.error;
+        }
+    });
+
+    // 注销账号
+    document.getElementById('deleteAccountBtn').addEventListener('click', async () => {
+        if (confirm('⚠️ 永久注销账号将删除所有文件、好友、聊天记录，且不可恢复！确定吗？')) {
+            const res = await fetch('/api/user/delete_account', { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                showToast('账号已注销，即将跳转...');
+                setTimeout(() => window.location.href = '/login', 1500);
+            } else {
+                document.getElementById('deleteMsg').innerText = data.error;
+            }
+        }
+    });
+
+    // 登出
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        await fetch('/api/logout', { method: 'POST' });
+        window.location.href = '/login';
+    });
+
+    // 标签页切换
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.getAttribute('data-tab');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            if (tabId === 'files') document.getElementById('filesTab').classList.add('active');
+            else if (tabId === 'collections') {
+                document.getElementById('collectionsTab').classList.add('active');
+                loadCollections();
+            }
+            else if (tabId === 'settings') document.getElementById('settingsTab').classList.add('active');
+            else if (tabId === 'communityLink') document.getElementById('communityLinkTab').classList.add('active');
+        });
+    });
+
+    // 辅助转义
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // 获取当前用户ID（从session）
+    let currentUserId = null;
+    async function getCurrentUserId() {
+        const res = await fetch('/api/check_auth');
+        const data = await res.json();
+        if (data.success) currentUserId = data.user.id;
+        else window.location.href = '/login';
+    }
+
+    // 初始化加载
+    async function init() {
+        await getCurrentUserId();
+        await loadUserInfo();
+        await loadMyFiles();
+        await loadFriends();
+        // 定时刷新星币余额（可选）
+        setInterval(refreshCoins, 30000);
+    }
+    init();
+</script>
+</body>
+</html>

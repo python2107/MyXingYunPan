@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员控制台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: url("{{ url_for('static', filename='background.png') }}") no-repeat center center fixed;
+            background-size: cover;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: #3b82f6;
+        }
+
+        .user-info {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+        }
+
+        .btn-logout {
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+
+        .btn-logout:hover {
+            background: rgba(220, 38, 38, 0.95);
+        }
+
+        .user-list {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .user-item:hover {
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        button {
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-view {
+            background: rgba(59, 130, 246, 0.9);
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: rgba(37, 99, 235, 0.95);
+        }
+
+        .btn-reset {
+            background: rgba(245, 158, 11, 0.9);
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: rgba(217, 119, 6, 0.95);
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: rgba(220, 38, 38, 0.95);
+        }
+
+        .files-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .files-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border-radius: 1rem;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80%;
+            overflow: auto;
+            padding: 1.5rem;
+            position: relative;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.2);
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            opacity: 0;
+            transition: 0.2s;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-user-shield"></i>
+            <h2>管理员控制台</h2>
+        </div>
+        <div class="user-info">
+            <span>管理员: <span id="adminName"></span></span>
+            <button id="logoutBtn" class="btn-logout">登出</button>
+        </div>
+    </div>
+
+    <div class="user-list" id="userList">
+        <div style="text-align: center; padding: 2rem;">加载中...</div>
+    </div>
+</div>
+
+<div id="filesModal" class="files-modal">
+    <div class="files-content">
+        <span class="close">&times;</span>
+        <h3>用户文件列表</h3>
+        <div id="filesList"></div>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+    const userListDiv = document.getElementById('userList');
+    const filesModal = document.getElementById('filesModal');
+    const filesListDiv = document.getElementById('filesList');
+    const closeModal = document.querySelector('.close');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const adminNameSpan = document.getElementById('adminName');
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.style.backgroundColor = isError ? 'rgba(185, 28, 28, 0.9)' : 'rgba(30, 41, 59, 0.9)';
+        toast.style.opacity = '1';
+        setTimeout(() => toast.style.opacity = '0', 2500);
+    }
+
+    async function fetchAdminInfo() {
+        try {
+            const res = await fetch('/api/check_auth');
+            const data = await res.json();
+            if (!data.success || !data.user.is_admin) {
+                window.location.href = '/login';
+            } else {
+                adminNameSpan.textContent = data.user.username;
+            }
+        } catch (err) {
+            window.location.href = '/login';
+        }
+    }
+
+    async function fetchUsers() {
+        try {
+            const res = await fetch('/api/admin/users');
+            const data = await res.json();
+            if (data.success) {
+                renderUsers(data.users);
+            } else {
+                showToast('获取用户列表失败', true);
+            }
+        } catch (err) {
+            showToast('网络错误', true);
+        }
+    }
+
+    function renderUsers(users) {
+        if (!users.length) {
+            userListDiv.innerHTML = '<div style="text-align: center; padding: 2rem;">暂无用户</div>';
+            return;
+        }
+        const html = users.map(user => `
+            <div class="user-item">
+                <div class="user-info">
+                    <strong>${escapeHtml(user.username)}</strong> 
+                    ${user.is_admin ? '<span style="background:#facc15; padding:2px 8px; border-radius:12px; font-size:0.8rem;">管理员</span>' : '普通用户'}
+                    <div style="font-size:0.8rem; color:#64748b;">密码哈希: ${user.password_hash.substring(0, 20)}...</div>
+                    <div style="font-size:0.7rem;">注册时间: ${user.created_at}</div>
+                </div>
+                <div class="user-actions">
+                    ${!user.is_admin ? `
+                        <button class="btn-view" data-user-id="${user.id}" data-username="${escapeAttr(user.username)}">查看文件</button>
+                        <button class="btn-reset" data-user-id="${user.id}" data-username="${escapeAttr(user.username)}">重置密码</button>
+                        <button class="btn-delete" data-user-id="${user.id}" data-username="${escapeAttr(user.username)}">删除用户</button>
+                    ` : '<span style="color:#9ca3af;">(管理员)</span>'}
+                </div>
+            </div>
+        `).join('');
+        userListDiv.innerHTML = html;
+
+        document.querySelectorAll('.btn-view').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const userId = btn.getAttribute('data-user-id');
+                const username = btn.getAttribute('data-username');
+                await viewUserFiles(userId, username);
+            });
+        });
+        document.querySelectorAll('.btn-reset').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const userId = btn.getAttribute('data-user-id');
+                const username = btn.getAttribute('data-username');
+                if (confirm(`重置用户 "${username}" 的密码为 123456 吗？`)) {
+                    await resetPassword(userId);
+                }
+            });
+        });
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const userId = btn.getAttribute('data-user-id');
+                const username = btn.getAttribute('data-username');
+                if (confirm(`确定删除用户 "${username}" 及其所有文件吗？此操作不可恢复！`)) {
+                    await deleteUser(userId);
+                }
+            });
+        });
+    }
+
+    async function viewUserFiles(userId, username) {
+        try {
+            const res = await fetch(`/api/admin/user/${userId}/files`);
+            const data = await res.json();
+            if (data.success) {
+                if (data.files.length === 0) {
+                    filesListDiv.innerHTML = '<p>该用户暂无文件</p>';
+                } else {
+                    const filesHtml = data.files.map(file => `
+                        <div class="file-item">
+                            <span>${escapeHtml(file.name)} (${file.size_human})</span>
+                            <div>
+                                <a href="/api/download/${encodeURIComponent(file.name)}?admin_user=${userId}" target="_blank" style="color:#3b82f6;">下载</a>
+                            </div>
+                        </div>
+                    `).join('');
+                    filesListDiv.innerHTML = `<h4>用户：${escapeHtml(username)}</h4>${filesHtml}`;
+                }
+                filesModal.style.display = 'flex';
+            } else {
+                showToast(data.error, true);
+            }
+        } catch (err) {
+            showToast('加载文件列表失败', true);
+        }
+    }
+
+    async function resetPassword(userId) {
+        try {
+            const newPwd = prompt("请输入新密码（至少6位）：", "123456");
+            if (!newPwd) return;
+            if (newPwd.length < 6) {
+                showToast('密码至少6位', true);
+                return;
+            }
+            const res = await fetch(`/api/admin/reset_password/${userId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({new_password: newPwd})
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(data.message);
+                fetchUsers();
+            } else {
+                showToast(data.error, true);
+            }
+        } catch (err) {
+            showToast('请求失败', true);
+        }
+    }
+
+    async function deleteUser(userId) {
+        try {
+            const res = await fetch(`/api/admin/delete_user/${userId}`, {method: 'DELETE'});
+            const data = await res.json();
+            if (data.success) {
+                showToast('用户已删除');
+                fetchUsers();
+            } else {
+                showToast(data.error, true);
+            }
+        } catch (err) {
+            showToast('删除失败', true);
+        }
+    }
+
+    closeModal.addEventListener('click', () => {
+        filesModal.style.display = 'none';
+    });
+    window.addEventListener('click', (e) => {
+        if (e.target === filesModal) filesModal.style.display = 'none';
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+        await fetch('/api/logout', {method: 'POST'});
+        window.location.href = '/login';
+    });
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    function escapeAttr(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    fetchAdminInfo();
+    fetchUsers();
+</script>
+</body>
+</html>
