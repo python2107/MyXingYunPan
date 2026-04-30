@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星云盘 · 个人云存储</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background: #ffffff;
+            color: #1e293b;
+            line-height: 1.5;
+        }
+        /* 导航栏 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .logo i {
+            margin-right: 0.5rem;
+            color: #3b82f6;
+        }
+        .nav-links a {
+            margin-left: 1.5rem;
+            text-decoration: none;
+            color: #334155;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .nav-links a:hover {
+            color: #3b82f6;
+        }
+        .btn-outline {
+            border: 1px solid #3b82f6;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            background: transparent;
+            color: #3b82f6;
+        }
+        .btn-outline:hover {
+            background: #3b82f6;
+            color: white;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        /* 英雄区 */
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            color: #475569;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+        /* 特性卡片 */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 1.5rem;
+            padding: 1.8rem;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+            transition: 0.3s;
+            border: 1px solid #e2e8f0;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.1);
+        }
+        .card i {
+            font-size: 2.5rem;
+            color: #3b82f6;
+            margin-bottom: 1rem;
+        }
+        .card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+        .card p {
+            color: #64748b;
+        }
+        /* 底部 */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            background: #f8fafc;
+            margin-top: 2rem;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+        }
+        .footer a {
+            color: #3b82f6;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+        @media (max-width: 640px) {
+            .hero h1 { font-size: 2rem; }
+            .navbar { flex-direction: column; gap: 0.5rem; }
+            .nav-links a { margin: 0 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-cloud-upload-alt"></i> 星云盘
+        </div>
+        <div class="nav-links">
+            <a href="#features">功能</a>
+            <a href="/community">社区</a>
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('user_center') }}" class="btn-outline">个人中心</a>
+                <a href="{{ url_for('logout_page') }}" class="btn-outline">登出</a>
+            {% else %}
+                <a href="{{ url_for('login_page') }}" class="btn-outline">登录</a>
+                <a href="{{ url_for('login_page') }}?tab=register" class="btn-primary">免费注册</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>你的私有云盘 · 分享与社交</h1>
+        <p>安全存储、轻松分享、与好友互动。星币系统、社区公开文件、实时聊天，完全免费。</p>
+        {% if not session.get('user_id') %}
+            <a href="{{ url_for('login_page') }}" class="btn-primary">开始使用 →</a>
+        {% else %}
+            <a href="{{ url_for('user_center') }}" class="btn-primary">进入我的云盘 →</a>
+        {% endif %}
+    </section>
+
+    <section id="features" class="features">
+        <div class="card">
+            <i class="fas fa-upload"></i>
+            <h3>文件存储与管理</h3>
+            <p>支持任意格式文件，自动生成分享链接，可设置公开或私密。</p>
+        </div>
+        <div class="card">
+            <i class="fas fa-comments"></i>
+            <h3>好友聊天</h3>
+            <p>添加好友，实时消息，打造你的社交圈。</p>
+        </div>
+        <div class="card">
+            <i class="fas fa-globe"></i>
+            <h3>公开社区</h3>
+            <p>浏览他人分享的公开文件，点赞收藏，获得星币奖励。</p>
+        </div>
+        <div class="card">
+            <i class="fas fa-coins"></i>
+            <h3>星币系统</h3>
+            <p>每日签到、上传文件、点赞收藏均可获得星币，兑换更多存储容量。</p>
+        </div>
+        <div class="card">
+            <i class="fas fa-shield-alt"></i>
+            <h3>安全可靠</h3>
+            <p>密码加密存储，文件隔离，管理员无法查看您的私密文件。</p>
+        </div>
+        <div class="card">
+            <i class="fas fa-download"></i>
+            <h3>免注册下载</h3>
+            <p>公开文件无需登录即可下载，方便分享。</p>
+        </div>
+    </section>
+
+    <div class="footer">
+        <div>
+            <a href="/privacy">隐私政策</a> | 
+            <a href="/terms">用户协议</a> | 
+            <a href="/community">社区</a>
+        </div>
+        <p style="margin-top: 1rem;">© 2025 星云盘 · 让云存储更简单</p>
+    </div>
+</body>
+</html>

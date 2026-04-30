@@ -39,18 +39,20 @@ def get_db():
         db.row_factory = sqlite3.Row
     return db
 
+
 @app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, "_database", None)
     if db is not None:
         db.close()
 
+
 def init_db():
     """初始化数据库：创建所有表，添加缺失的列，创建默认管理员"""
     with app.app_context():
         db = get_db()
         cursor = db.cursor()
-        
+
         # 1. 创建 users 表（基础表）
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS users (
@@ -60,11 +62,11 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        
+
         # 2. 为 users 表添加缺失的列（安全执行）
         cursor.execute("PRAGMA table_info(users)")
         existing_columns = [col[1] for col in cursor.fetchall()]
-        
+
         if 'is_admin' not in existing_columns:
             cursor.execute("ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0")
             print("已添加 is_admin 列")
@@ -74,7 +76,7 @@ def init_db():
         if 'capacity_mb' not in existing_columns:
             cursor.execute("ALTER TABLE users ADD COLUMN capacity_mb INTEGER DEFAULT 100")
             print("已添加 capacity_mb 列")
-        
+
         # 3. 创建所有其他表（如果不存在）
         # 文件表
         cursor.execute("""
@@ -176,9 +178,9 @@ def init_db():
                 FOREIGN KEY (receiver_id) REFERENCES users(id)
             )
         """)
-        
+
         db.commit()
-        
+
         # 4. 创建默认管理员（如果不存在）
         admin = db.execute("SELECT id FROM users WHERE username = ?", ("admin",)).fetchone()
         if not admin:
@@ -192,6 +194,8 @@ def init_db():
             # 确保管理员有足够的容量和星币（可选）
             db.execute("UPDATE users SET capacity_mb = 10240 WHERE username = 'admin' AND capacity_mb < 10240")
             db.commit()
+
+
 init_db()
 
 # ==================== 辅助函数 ====================
@@ -200,27 +204,6 @@ def get_user_folder(user_id: int) -> Path:
     user_folder.mkdir(exist_ok=True)
     return user_folder
 
-def safe_filename(original: str) -> str:
-    """安全化文件名，只保留字母、数字、点、下划线、横线、空格，其他字符替换为下划线"""
-    base = os.path.basename(original)
-    safe_chars = []
-    for ch in base:
-        if ch.isalnum() or ch in ".-_ ":
-            safe_chars.append(ch)
-        else:
-            safe_chars.append("_")
-    return "".join(safe_chars).strip()
-
-def unique_filename(directory: Path, filename: str) -> str:
-    """避免重名，如果文件已存在则添加序号"""
-    stem = Path(filename).stem
-    suffix = Path(filename).suffix
-    counter = 1
-    new_name = filename
-    while (directory / new_name).exists():
-        new_name = f"{stem} ({counter}){suffix}"
-        counter += 1
-    return new_name
 
 def human_readable_size(size: int) -> str:
     for unit in ["B", "KB", "MB", "GB"]:
@@ -228,6 +211,7 @@ def human_readable_size(size: int) -> str:
             return f"{size:.1f} {unit}"
         size /= 1024.0
     return f"{size:.1f} TB"
+
 
 def get_file_info_from_record(file_record):
     """从files表记录构造返回信息"""
@@ -244,10 +228,36 @@ def get_file_info_from_record(file_record):
         "uploader": None  # 会在需要时填充
     }
 
+
+def safe_filename(original: str) -> str:
+    """安全化文件名，只保留字母、数字、点、下划线、横线、空格，其他字符替换为下划线"""
+    base = os.path.basename(original)
+    safe_chars = []
+    for ch in base:
+        if ch.isalnum() or ch in ".-_ ":
+            safe_chars.append(ch)
+        else:
+            safe_chars.append("_")
+    return "".join(safe_chars).strip()
+
+
+def unique_filename(directory: Path, filename: str) -> str:
+    """避免重名，如果文件已存在则添加序号"""
+    stem = Path(filename).stem
+    suffix = Path(filename).suffix
+    counter = 1
+    new_name = filename
+    while (directory / new_name).exists():
+        new_name = f"{stem} ({counter}){suffix}"
+        counter += 1
+    return new_name
+
+
 def get_user_coins(user_id: int) -> int:
     db = get_db()
     row = db.execute("SELECT coins FROM users WHERE id = ?", (user_id,)).fetchone()
     return row["coins"] if row else 0
+
 
 def update_user_coins(user_id: int, delta: int, reason: str) -> bool:
     db = get_db()
@@ -263,14 +273,17 @@ def update_user_coins(user_id: int, delta: int, reason: str) -> bool:
     db.commit()
     return True
 
+
 def get_user_capacity(user_id: int) -> int:
     """返回用户当前已用容量（MB）"""
     db = get_db()
-    # 计算所有文件总大小（字节转MB）
     total_bytes = db.execute(
         "SELECT COALESCE(SUM(size_bytes), 0) FROM files WHERE user_id = ?", (user_id,)
     ).fetchone()[0]
-    return math.ceil(total_bytes / (1024*1024))
+    if total_bytes is None:
+        return 0
+    return math.ceil(total_bytes / (1024 * 1024))
+
 
 def check_capacity(user_id: int, new_file_size_bytes: int) -> bool:
     """检查上传新文件后是否超出用户总容量限制"""
@@ -280,10 +293,10 @@ def check_capacity(user_id: int, new_file_size_bytes: int) -> bool:
         return False
     total_capacity_mb = user["capacity_mb"]
     used_mb = get_user_capacity(user_id)
-    new_file_mb = math.ceil(new_file_size_bytes / (1024*1024))
+    new_file_mb = math.ceil(new_file_size_bytes / (1024 * 1024))
     return (used_mb + new_file_mb) <= total_capacity_mb
 
-# 签到功能
+
 def can_sign_in(user_id: int) -> bool:
     db = get_db()
     today = date.today().isoformat()
@@ -293,8 +306,8 @@ def can_sign_in(user_id: int) -> bool:
     ).fetchone()
     return record is None
 
+
 def do_sign_in(user_id: int) -> int:
-    """执行签到，返回获得星币数（固定10）"""
     if not can_sign_in(user_id):
         return 0
     gain = 10
@@ -308,7 +321,7 @@ def do_sign_in(user_id: int) -> int:
     db.commit()
     return gain
 
-# 好友相关
+
 def are_friends(user_id1: int, user_id2: int) -> bool:
     db = get_db()
     row = db.execute(
@@ -317,11 +330,11 @@ def are_friends(user_id1: int, user_id2: int) -> bool:
     ).fetchone()
     return row is not None
 
+
 def send_friend_request(from_user_id: int, to_user_id: int) -> bool:
     if from_user_id == to_user_id:
         return False
     db = get_db()
-    # 检查是否已经是好友或已有请求
     existing = db.execute(
         "SELECT id, status FROM friends WHERE (user_id=? AND friend_id=?) OR (user_id=? AND friend_id=?)",
         (from_user_id, to_user_id, to_user_id, from_user_id)
@@ -335,6 +348,7 @@ def send_friend_request(from_user_id: int, to_user_id: int) -> bool:
     db.commit()
     return True
 
+
 def accept_friend_request(request_id: int, user_id: int) -> bool:
     db = get_db()
     req = db.execute(
@@ -347,6 +361,7 @@ def accept_friend_request(request_id: int, user_id: int) -> bool:
     db.commit()
     return True
 
+
 # ==================== 权限装饰器 ====================
 def login_required(f):
     @wraps(f)
@@ -355,6 +370,7 @@ def login_required(f):
             return redirect(url_for("login_page"))
         return f(*args, **kwargs)
     return decorated_function
+
 
 def admin_required(f):
     @wraps(f)
@@ -368,49 +384,61 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 # ==================== 页面路由 ====================
 @app.route("/")
 def index():
-    if "user_id" in session:
-        db = get_db()
-        user = db.execute("SELECT is_admin FROM users WHERE id = ?", (session["user_id"],)).fetchone()
-        if user and user["is_admin"]:
-            return redirect(url_for("admin_dashboard"))
-        else:
-            return redirect(url_for("user_center"))
-    return redirect(url_for("login_page"))
+    """首页：展示介绍，无需登录"""
+    return render_template("index.html")
+
 
 @app.route("/login")
 def login_page():
+    """登录/注册页面"""
     if "user_id" in session:
         return redirect(url_for("index"))
     return render_template("login.html")
 
+
+@app.route("/logout")
+def logout_page():
+    session.clear()
+    return redirect(url_for("index"))
+
+
 @app.route("/user_center")
 @login_required
 def user_center():
-    """用户个人中心（新界面）"""
-    return render_template("user_center.html")
+    """普通用户主界面"""
+    db = get_db()
+    user = db.execute("SELECT username FROM users WHERE id = ?", (session["user_id"],)).fetchone()
+    return render_template("dashboard.html", username=user["username"])
+
 
 @app.route("/community")
 def community_page():
     """社区公开文件页面，免注册可查看"""
     return render_template("community.html")
 
+
 @app.route("/admin")
 @admin_required
 def admin_dashboard():
+    """管理员界面"""
     return render_template("admin.html")
+
 
 @app.route("/privacy")
 def privacy_policy():
     now = datetime.now().strftime("%Y年%m月%d日 %H:%M")
     return render_template("privacy_policy.html", now_time=now)
 
+
 @app.route("/terms")
 def user_agreement():
     now = datetime.now().strftime("%Y年%m月%d日 %H:%M")
     return render_template("user_agreement.html", now_time=now)
+
 
 # ==================== API：认证 ====================
 @app.route("/api/check_auth")
@@ -432,6 +460,7 @@ def check_auth():
         else:
             session.clear()
     return jsonify({"success": False}), 401
+
 
 @app.route("/api/register", methods=["POST"])
 def register():
@@ -471,6 +500,7 @@ def register():
     except sqlite3.IntegrityError:
         return jsonify({"success": False, "error": "用户名已存在"}), 400
 
+
 @app.route("/api/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -496,10 +526,12 @@ def login():
         }
     })
 
+
 @app.route("/api/logout", methods=["POST"])
 def logout():
     session.clear()
     return jsonify({"success": True})
+
 
 # ==================== API：用户个人中心 ====================
 @app.route("/api/user/info")
@@ -524,6 +556,7 @@ def user_info():
         }
     })
 
+
 @app.route("/api/user/change_password", methods=["POST"])
 @login_required
 def change_password():
@@ -543,6 +576,7 @@ def change_password():
     db.commit()
     return jsonify({"success": True, "message": "密码修改成功"})
 
+
 @app.route("/api/user/delete_account", methods=["POST"])
 @login_required
 def delete_account():
@@ -558,25 +592,20 @@ def delete_account():
         if path.exists():
             path.unlink()
     db.execute("DELETE FROM files WHERE user_id = ?", (user_id,))
-    # 删除好友关系
     db.execute("DELETE FROM friends WHERE user_id=? OR friend_id=?", (user_id, user_id))
-    # 删除聊天消息
     db.execute("DELETE FROM messages WHERE sender_id=? OR receiver_id=?", (user_id, user_id))
-    # 删除点赞收藏记录
     db.execute("DELETE FROM file_likes WHERE user_id=?", (user_id,))
     db.execute("DELETE FROM file_collections WHERE user_id=?", (user_id,))
-    # 删除签到和兑换记录
     db.execute("DELETE FROM sign_in_log WHERE user_id=?", (user_id,))
     db.execute("DELETE FROM exchange_log WHERE user_id=?", (user_id,))
-    # 删除用户目录
     user_folder = get_user_folder(user_id)
     if user_folder.exists():
         shutil.rmtree(user_folder)
-    # 删除用户记录
     db.execute("DELETE FROM users WHERE id = ?", (user_id,))
     db.commit()
     session.clear()
     return jsonify({"success": True, "message": "账号已注销"})
+
 
 # ==================== API：星币与签到 ====================
 @app.route("/api/user/coins")
@@ -584,6 +613,7 @@ def delete_account():
 def get_coins():
     coins = get_user_coins(session["user_id"])
     return jsonify({"success": True, "coins": coins})
+
 
 @app.route("/api/user/coin_logs")
 @login_required
@@ -602,6 +632,7 @@ def get_coin_logs():
     } for log in logs]
     return jsonify({"success": True, "logs": log_list})
 
+
 @app.route("/api/user/sign_in", methods=["POST"])
 @login_required
 def sign_in():
@@ -611,10 +642,10 @@ def sign_in():
     gained = do_sign_in(user_id)
     return jsonify({"success": True, "gained": gained, "new_balance": get_user_coins(user_id)})
 
+
 @app.route("/api/user/exchange_capacity", methods=["POST"])
 @login_required
 def exchange_capacity():
-    """星币兑换容量：1星币 = 0.5 MB，需要整数星币"""
     data = request.get_json()
     coins_to_spend = data.get("coins", 0)
     if not isinstance(coins_to_spend, int) or coins_to_spend <= 0:
@@ -625,8 +656,7 @@ def exchange_capacity():
         return jsonify({"success": False, "error": "星币不足"}), 400
     mb_gain = coins_to_spend // 2  # 因为0.5MB per coin，整数除法
     if mb_gain == 0 and coins_to_spend > 0:
-        mb_gain = 1  # 至少1MB
-    # 扣除星币，增加容量
+        mb_gain = 1
     db = get_db()
     if not update_user_coins(user_id, -coins_to_spend, f"兑换{mb_gain}MB容量消耗{coins_to_spend}星币"):
         return jsonify({"success": False, "error": "扣币失败"}), 500
@@ -642,7 +672,8 @@ def exchange_capacity():
     new_capacity = db.execute("SELECT capacity_mb FROM users WHERE id=?", (user_id,)).fetchone()["capacity_mb"]
     return jsonify({"success": True, "mb_gained": mb_gain, "new_capacity_mb": new_capacity, "new_balance": get_user_coins(user_id)})
 
-# ==================== API：文件上传与管理（含公开/私密、星币奖励）====================
+
+# ==================== API：文件上传与管理 ====================
 @app.route("/api/files")
 @login_required
 def list_my_files():
@@ -655,6 +686,7 @@ def list_my_files():
     files = [get_file_info_from_record(r) for r in records]
     return jsonify({"success": True, "files": files})
 
+
 @app.route("/api/upload", methods=["POST"])
 @login_required
 def upload_file():
@@ -664,7 +696,6 @@ def upload_file():
     if file.filename == "":
         return jsonify({"success": False, "error": "未选择文件"}), 400
 
-    # 获取额外参数：是否公开
     is_public = request.form.get("is_public", "0") == "1"
 
     original_filename = safe_filename(file.filename)
@@ -679,15 +710,11 @@ def upload_file():
     if not check_capacity(user_id, file_size):
         return jsonify({"success": False, "error": "存储容量不足，请兑换容量或删除旧文件"}), 403
 
-    # 检查星币（上传需要消耗星币？按新规则：上传文件奖励星币（文件大小MB向下取整），但之前的设计是消耗，现改为奖励。此处实现奖励规则）
-    # 规则：上传文件 + 文件大小(MB)向下取整 星币（至少1）
-    size_mb = max(1, file_size // (1024*1024))
-    # 先保存文件，成功后增加星币
+    # 先保存文件，成功后奖励星币
     user_folder = get_user_folder(user_id)
     final_name = unique_filename(user_folder, original_filename)
     try:
         file.save(user_folder / final_name)
-        # 记录到 files 表
         db = get_db()
         cursor = db.cursor()
         cursor.execute(
@@ -696,7 +723,8 @@ def upload_file():
         )
         file_id = cursor.lastrowid
         db.commit()
-        # 奖励星币
+        # 奖励星币（文件大小MB向下取整，至少1）
+        size_mb = max(1, file_size // (1024 * 1024))
         reward = size_mb
         update_user_coins(user_id, reward, f"上传文件 {final_name} 获得 {reward} 星币")
         return jsonify({
@@ -709,16 +737,16 @@ def upload_file():
     except Exception as e:
         return jsonify({"success": False, "error": f"保存失败: {str(e)}"}), 500
 
+
 @app.route("/api/download/<int:file_id>")
 def download_file(file_id):
-    """公开文件可免注册下载，私密文件需登录且为文件主人或好友"""
+    """公开文件可免注册下载，私密文件需登录且为文件主人"""
     db = get_db()
     file_record = db.execute(
         "SELECT user_id, filename, file_path, is_public FROM files WHERE id = ?", (file_id,)
     ).fetchone()
     if not file_record:
         abort(404)
-    # 如果是公开文件，允许所有人下载
     if file_record["is_public"]:
         path = Path(file_record["file_path"])
         if path.exists():
@@ -730,11 +758,9 @@ def download_file(file_id):
             )
         else:
             abort(404)
-    # 私密文件：需要登录且为文件主人
     if "user_id" not in session:
         return redirect(url_for("login_page"))
     if session["user_id"] != file_record["user_id"]:
-        # 可以扩展好友分享权限，这里简单拒绝
         abort(403)
     path = Path(file_record["file_path"])
     if not path.exists():
@@ -745,6 +771,7 @@ def download_file(file_id):
         as_attachment=True,
         download_name=file_record["filename"],
     )
+
 
 @app.route("/api/delete/<int:file_id>", methods=["DELETE"])
 @login_required
@@ -764,6 +791,7 @@ def delete_file(file_id):
     db.commit()
     return jsonify({"success": True, "message": "删除成功"})
 
+
 @app.route("/api/file/toggle_public/<int:file_id>", methods=["POST"])
 @login_required
 def toggle_public(file_id):
@@ -778,12 +806,11 @@ def toggle_public(file_id):
     db.commit()
     return jsonify({"success": True, "is_public": bool(new_status)})
 
+
 # ==================== API：社区公开文件 ====================
 @app.route("/api/community/files")
 def community_files():
-    """公开文件列表，按点赞数排序，可选分页"""
     db = get_db()
-    # 联查上传者用户名
     records = db.execute("""
         SELECT f.id, f.filename, f.size_bytes, f.likes, f.collections, f.created_at, u.username as uploader
         FROM files f
@@ -806,16 +833,15 @@ def community_files():
         })
     return jsonify({"success": True, "files": files})
 
+
 @app.route("/api/community/like/<int:file_id>", methods=["POST"])
 @login_required
 def like_file(file_id):
     user_id = session["user_id"]
     db = get_db()
-    # 检查文件是否存在且公开
     file = db.execute("SELECT id, user_id, is_public FROM files WHERE id = ?", (file_id,)).fetchone()
     if not file or not file["is_public"]:
         return jsonify({"success": False, "error": "文件不存在或非公开"}), 404
-    # 检查是否已经点赞
     existing = db.execute(
         "SELECT id FROM file_likes WHERE user_id = ? AND file_id = ?",
         (user_id, file_id)
@@ -827,11 +853,10 @@ def like_file(file_id):
         (user_id, file_id)
     )
     db.execute("UPDATE files SET likes = likes + 1 WHERE id = ?", (file_id,))
-    # 奖励点赞者？规则：点赞不奖励星币，但作者获得星币（点赞数量个星币）
-    # 这里实现：点赞时，文件作者获得1星币（每个点赞1星币）
     update_user_coins(file["user_id"], 1, f"文件 {file_id} 获得一个点赞")
     db.commit()
     return jsonify({"success": True, "message": "点赞成功"})
+
 
 @app.route("/api/community/collect/<int:file_id>", methods=["POST"])
 @login_required
@@ -852,10 +877,10 @@ def collect_file(file_id):
         (user_id, file_id)
     )
     db.execute("UPDATE files SET collections = collections + 1 WHERE id = ?", (file_id,))
-    # 收藏奖励：作者获得2星币（按规则：收藏数量*2个星币，此处每个收藏给2星币）
     update_user_coins(file["user_id"], 2, f"文件 {file_id} 获得一个收藏")
     db.commit()
     return jsonify({"success": True, "message": "收藏成功"})
+
 
 @app.route("/api/user/my_collections")
 @login_required
@@ -882,13 +907,13 @@ def my_collections():
     } for r in records]
     return jsonify({"success": True, "files": files})
 
+
 # ==================== API：好友与聊天 ====================
 @app.route("/api/friends")
 @login_required
 def list_friends():
     user_id = session["user_id"]
     db = get_db()
-    # 获取好友列表（status='accepted'）
     rows = db.execute("""
         SELECT u.id, u.username
         FROM friends f
@@ -896,7 +921,6 @@ def list_friends():
         WHERE (f.user_id = ? OR f.friend_id = ?) AND f.status = 'accepted' AND u.id != ?
     """, (user_id, user_id, user_id)).fetchall()
     friends = [{"id": r["id"], "username": r["username"]} for r in rows]
-    # 获取待处理的好友请求（别人发给我的）
     pending = db.execute("""
         SELECT f.id, u.id as from_id, u.username
         FROM friends f
@@ -906,6 +930,7 @@ def list_friends():
     pending_requests = [{"request_id": r["id"], "from_id": r["from_id"], "username": r["username"]} for r in pending]
     return jsonify({"success": True, "friends": friends, "pending_requests": pending_requests})
 
+
 @app.route("/api/friends/search", methods=["GET"])
 @login_required
 def search_users():
@@ -913,11 +938,13 @@ def search_users():
     if len(query) < 2:
         return jsonify({"success": True, "users": []})
     db = get_db()
+    # 修复bug：排除管理员（username != 'admin'），且排除自己
     users = db.execute(
-        "SELECT id, username FROM users WHERE username LIKE ? AND id != ? LIMIT 10",
+        "SELECT id, username FROM users WHERE username LIKE ? AND id != ? AND username != 'admin' LIMIT 10",
         (f"%{query}%", session["user_id"])
     ).fetchall()
     return jsonify({"success": True, "users": [{"id": u["id"], "username": u["username"]} for u in users]})
+
 
 @app.route("/api/friends/request", methods=["POST"])
 @login_required
@@ -926,10 +953,16 @@ def send_friend_request_api():
     to_user_id = data.get("to_user_id")
     if not to_user_id or to_user_id == session["user_id"]:
         return jsonify({"success": False, "error": "无效的用户"}), 400
+    # 额外检查：不能向管理员发送好友请求
+    db = get_db()
+    target_user = db.execute("SELECT is_admin FROM users WHERE id = ?", (to_user_id,)).fetchone()
+    if target_user and target_user["is_admin"]:
+        return jsonify({"success": False, "error": "不能添加管理员为好友"}), 400
     if send_friend_request(session["user_id"], int(to_user_id)):
         return jsonify({"success": True, "message": "好友请求已发送"})
     else:
         return jsonify({"success": False, "error": "无法发送请求（已是好友或已有待处理请求）"}), 400
+
 
 @app.route("/api/friends/accept", methods=["POST"])
 @login_required
@@ -943,6 +976,7 @@ def accept_friend_request_api():
     else:
         return jsonify({"success": False, "error": "无效的请求"}), 400
 
+
 @app.route("/api/messages", methods=["GET"])
 @login_required
 def get_messages():
@@ -951,7 +985,6 @@ def get_messages():
         return jsonify({"success": False, "error": "缺少好友ID"}), 400
     user_id = session["user_id"]
     db = get_db()
-    # 获取与指定好友的聊天记录
     rows = db.execute("""
         SELECT sender_id, receiver_id, content, created_at, is_read
         FROM messages
@@ -965,13 +998,13 @@ def get_messages():
         "time": r["created_at"],
         "is_read": bool(r["is_read"])
     } for r in rows]
-    # 标记已读
     db.execute(
         "UPDATE messages SET is_read = 1 WHERE sender_id = ? AND receiver_id = ? AND is_read = 0",
         (friend_id, user_id)
     )
     db.commit()
     return jsonify({"success": True, "messages": messages})
+
 
 @app.route("/api/messages/send", methods=["POST"])
 @login_required
@@ -981,7 +1014,6 @@ def send_message():
     content = data.get("content", "").strip()
     if not receiver_id or not content:
         return jsonify({"success": False, "error": "缺少参数"}), 400
-    # 检查是否是好友
     if not are_friends(session["user_id"], int(receiver_id)):
         return jsonify({"success": False, "error": "不是好友关系"}), 403
     db = get_db()
@@ -992,7 +1024,8 @@ def send_message():
     db.commit()
     return jsonify({"success": True, "message": "发送成功"})
 
-# ==================== API：管理员功能（保留原样，新增用户列表显示星币容量）====================
+
+# ==================== API：管理员功能 ====================
 @app.route("/api/admin/users")
 @admin_required
 def admin_list_users():
@@ -1015,6 +1048,7 @@ def admin_list_users():
         })
     return jsonify({"success": True, "users": user_list})
 
+
 @app.route("/api/admin/user/<int:user_id>/files")
 @admin_required
 def admin_list_user_files(user_id):
@@ -1029,6 +1063,7 @@ def admin_list_user_files(user_id):
     files = [get_file_info_from_record(r) for r in records]
     return jsonify({"success": True, "files": files})
 
+
 @app.route("/api/admin/delete_user/<int:user_id>", methods=["DELETE"])
 @admin_required
 def admin_delete_user(user_id):
@@ -1038,9 +1073,6 @@ def admin_delete_user(user_id):
         return jsonify({"success": False, "error": "用户不存在"}), 404
     if user["is_admin"]:
         return jsonify({"success": False, "error": "不能删除管理员账号"}), 403
-    # 调用与用户自助注销相同的逻辑（复用）
-    # 为避免重复代码，直接调用删除函数？但需要 session 上下文，简单复制逻辑
-    # 这里简化：删除文件、记录、目录
     files = db.execute("SELECT file_path FROM files WHERE user_id = ?", (user_id,)).fetchall()
     for f in files:
         path = Path(f["file_path"])
@@ -1060,6 +1092,7 @@ def admin_delete_user(user_id):
     db.commit()
     return jsonify({"success": True, "message": "用户已删除"})
 
+
 @app.route("/api/admin/reset_password/<int:user_id>", methods=["POST"])
 @admin_required
 def admin_reset_password(user_id):
@@ -1075,6 +1108,7 @@ def admin_reset_password(user_id):
     db.execute("UPDATE users SET password_hash = ? WHERE id = ?", (new_hash, user_id))
     db.commit()
     return jsonify({"success": True, "message": f"密码已重置为 {new_password}"})
+
 
 @app.route("/api/admin/adjust_coins/<int:user_id>", methods=["POST"])
 @admin_required
@@ -1094,18 +1128,22 @@ def admin_adjust_coins(user_id):
     new_balance = get_user_coins(user_id)
     return jsonify({"success": True, "new_balance": new_balance})
 
+
 # ==================== 错误处理 ====================
 @app.errorhandler(403)
 def forbidden(e):
     return jsonify({"success": False, "error": "无权限访问"}), 403
 
+
 @app.errorhandler(404)
 def not_found(e):
     return jsonify({"success": False, "error": "资源不存在"}), 404
+
 
 @app.errorhandler(413)
 def too_large(e):
     return jsonify({"success": False, "error": "文件超过大小限制 (256MB)"}), 413
 
+
 if __name__ == "__main__":
-    app.run(debug=False, host="0.0.0.0", port=8000)
+    app.run(debug=True, host="0.0.0.0", port=8000)
