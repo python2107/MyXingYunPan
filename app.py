@@ -412,7 +412,7 @@ def user_center():
     """普通用户主界面"""
     db = get_db()
     user = db.execute("SELECT username FROM users WHERE id = ?", (session["user_id"],)).fetchone()
-    return render_template("dashboard.html", username=user["username"])
+    return render_template("user_center.html", username=user["username"])
 
 
 @app.route("/community")

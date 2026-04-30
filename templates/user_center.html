@@ -2,26 +2,29 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>个人中心 - 星云盘</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>我的云盘 · 个人中心</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
         }
+
         body {
             background: url("{{ url_for('static', filename='background.png') }}") no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
             padding: 1.5rem;
         }
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
         }
+
         /* 头部 */
         .header {
             display: flex;
@@ -36,11 +39,13 @@
             border-radius: 2rem;
             border: 1px solid rgba(255, 255, 255, 0.6);
         }
+
         .logo-area {
             display: flex;
             align-items: center;
             gap: 12px;
         }
+
         .logo-area i {
             font-size: 2rem;
             color: #3b82f6;
@@ -48,6 +53,7 @@
             padding: 8px;
             border-radius: 18px;
         }
+
         .logo-area h1 {
             font-size: 1.5rem;
             background: linear-gradient(135deg, #1e293b, #2d3e5f);
@@ -55,6 +61,7 @@
             -webkit-background-clip: text;
             color: transparent;
         }
+
         .user-info {
             display: flex;
             align-items: center;
@@ -64,6 +71,7 @@
             padding: 0.5rem 1.2rem;
             border-radius: 60px;
         }
+
         .logout-btn {
             background: rgba(239, 68, 68, 0.9);
             border: none;
@@ -72,13 +80,15 @@
             border-radius: 40px;
             cursor: pointer;
         }
-        /* 主布局：两列 */
+
+        /* 两列布局 */
         .dashboard {
             display: grid;
             grid-template-columns: 320px 1fr;
             gap: 1.5rem;
         }
-        /* 侧边栏卡片通用样式 */
+
+        /* 侧边栏卡片 */
         .card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(8px);
@@ -87,12 +97,14 @@
             margin-bottom: 1.5rem;
             border: 1px solid rgba(255, 255, 255, 0.4);
         }
+
         .card h3 {
             font-size: 1.2rem;
             margin-bottom: 1rem;
             border-left: 4px solid #3b82f6;
             padding-left: 0.8rem;
         }
+
         /* 右侧主内容 */
         .main-content {
             background: rgba(255, 255, 255, 0.85);
@@ -101,6 +113,7 @@
             padding: 1.5rem;
             border: 1px solid rgba(255, 255, 255, 0.4);
         }
+
         .tab-buttons {
             display: flex;
             gap: 0.5rem;
@@ -108,6 +121,7 @@
             margin-bottom: 1.5rem;
             flex-wrap: wrap;
         }
+
         .tab-btn {
             background: transparent;
             border: none;
@@ -118,17 +132,21 @@
             transition: 0.2s;
             color: #334155;
         }
+
         .tab-btn.active {
             background: rgba(59, 130, 246, 0.2);
             color: #3b82f6;
             font-weight: 600;
         }
+
         .tab-pane {
             display: none;
         }
+
         .tab-pane.active {
             display: block;
         }
+
         /* 表单元素 */
         input, textarea, select {
             background: rgba(255, 255, 255, 0.8);
@@ -139,6 +157,7 @@
             margin-bottom: 0.8rem;
             outline: none;
         }
+
         button {
             background: rgba(59, 130, 246, 0.9);
             border: none;
@@ -148,15 +167,19 @@
             cursor: pointer;
             transition: 0.2s;
         }
+
         button:hover {
             background: rgba(37, 99, 235, 0.95);
         }
+
         .danger-btn {
             background: rgba(239, 68, 68, 0.9);
         }
+
         .danger-btn:hover {
             background: rgba(220, 38, 38, 0.95);
         }
+
         .file-item, .friend-item, .msg-item {
             background: rgba(255, 255, 255, 0.6);
             border-radius: 1rem;
@@ -167,11 +190,13 @@
             align-items: center;
             flex-wrap: wrap;
         }
+
         .file-actions button, .friend-actions button {
             margin-left: 0.5rem;
             padding: 4px 10px;
             font-size: 0.8rem;
         }
+
         .chat-box {
             height: 300px;
             overflow-y: auto;
@@ -180,22 +205,26 @@
             padding: 0.8rem;
             margin-bottom: 0.8rem;
         }
+
         .msg-bubble {
             margin-bottom: 0.5rem;
             padding: 0.5rem;
             border-radius: 1rem;
             max-width: 80%;
         }
+
         .msg-sent {
             background: #3b82f6;
             color: white;
             margin-left: auto;
             text-align: right;
         }
+
         .msg-received {
             background: rgba(255, 255, 255, 0.8);
             color: #1e293b;
         }
+
         .badge {
             background: #f59e0b;
             color: white;
@@ -203,13 +232,21 @@
             border-radius: 20px;
             font-size: 0.7rem;
         }
+
         .flex-between {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .mt-2 { margin-top: 0.8rem; }
-        .text-center { text-align: center; }
+
+        .mt-2 {
+            margin-top: 0.8rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
         .toast-msg {
             position: fixed;
             bottom: 25px;
@@ -226,9 +263,14 @@
             transition: opacity 0.2s;
             pointer-events: none;
         }
+
         @media (max-width: 768px) {
-            .dashboard { grid-template-columns: 1fr; }
-            body { padding: 1rem; }
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            body {
+                padding: 1rem;
+            }
         }
     </style>
 </head>
@@ -293,7 +335,7 @@
             </div>
         </div>
 
-        <!-- 右侧主内容区域（标签页） -->
+        <!-- 右侧主内容区域 -->
         <div class="main-content">
             <div class="tab-buttons">
                 <button class="tab-btn active" data-tab="files">我的文件</button>
@@ -334,7 +376,7 @@
                 <div id="deleteMsg" style="color: red; margin-top: 0.5rem;"></div>
             </div>
 
-            <!-- 社区链接（跳转） -->
+            <!-- 社区链接 -->
             <div id="communityLinkTab" class="tab-pane text-center">
                 <p>浏览其他用户分享的公开文件，点赞收藏可获得星币奖励。</p>
                 <button onclick="window.location.href='/community'">进入社区 →</button>
@@ -349,6 +391,7 @@
     // 全局变量
     let currentFriendId = null;
     let messagePollInterval = null;
+    let currentUserId = null;
 
     // 辅助函数
     function showToast(msg, isError = false) {
@@ -357,6 +400,16 @@
         toast.style.backgroundColor = isError ? 'rgba(185, 28, 28, 0.9)' : 'rgba(30, 41, 59, 0.9)';
         toast.style.opacity = '1';
         setTimeout(() => toast.style.opacity = '0', 2800);
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
     }
 
     // 加载用户基本信息
@@ -381,7 +434,7 @@
         }
     }
 
-    // 加载星币余额（单独刷新）
+    // 刷新星币余额
     async function refreshCoins() {
         const res = await fetch('/api/user/coins');
         const data = await res.json();
@@ -398,7 +451,7 @@
         if (data.success) {
             showToast(`签到成功！获得 ${data.gained} 星币`);
             refreshCoins();
-            loadUserInfo(); // 刷新容量等信息
+            loadUserInfo();
         } else {
             showToast(data.error || '签到失败', true);
         }
@@ -569,6 +622,7 @@
         if (messagePollInterval) clearInterval(messagePollInterval);
         messagePollInterval = setInterval(loadMessages, 3000);
     };
+
     document.getElementById('chatFriendSelect').addEventListener('change', (e) => {
         const id = parseInt(e.target.value);
         if (id) {
@@ -590,7 +644,7 @@
             const chatDiv = document.getElementById('chatMessages');
             let html = '';
             for (let msg of data.messages) {
-                const isSent = msg.sender_id == currentUserId;
+                const isSent = msg.sender_id === currentUserId;
                 html += `<div class="msg-bubble ${isSent ? 'msg-sent' : 'msg-received'}">
                             ${escapeHtml(msg.content)}<br><small>${new Date(msg.time).toLocaleTimeString()}</small>
                          </div>`;
@@ -739,19 +793,7 @@
         });
     });
 
-    // 辅助转义
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    // 获取当前用户ID（从session）
-    let currentUserId = null;
+    // 获取当前用户ID
     async function getCurrentUserId() {
         const res = await fetch('/api/check_auth');
         const data = await res.json();
@@ -759,13 +801,12 @@
         else window.location.href = '/login';
     }
 
-    // 初始化加载
+    // 初始化
     async function init() {
         await getCurrentUserId();
         await loadUserInfo();
         await loadMyFiles();
         await loadFriends();
-        // 定时刷新星币余额（可选）
         setInterval(refreshCoins, 30000);
     }
     init();
