@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }} 的个人主页 - 星云盘</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: url("{{ url_for('static', filename='background.png') }}") no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        /* 用户信息卡片 */
+        .profile-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 2rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .profile-card h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+        }
+        .profile-card p {
+            color: #475569;
+            margin-bottom: 0.3rem;
+        }
+        .avatar {
+            font-size: 4rem;
+            color: #3b82f6;
+            margin-bottom: 1rem;
+        }
+        /* 文件网格 */
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .file-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(4px);
+            border-radius: 1.2rem;
+            padding: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .file-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -8px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        .file-name {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.5rem;
+        }
+        .file-meta {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 0.5rem 0;
+        }
+        .download-link {
+            background: #3b82f6;
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: 0.2s;
+        }
+        .download-link:hover {
+            background: #2563eb;
+        }
+        .empty {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255,255,255,0.6);
+            border-radius: 1rem;
+            font-size: 1rem;
+            color: #475569;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+        }
+        .footer a {
+            color: #3b82f6;
+            text-decoration: none;
+            margin: 0 0.8rem;
+        }
+        .back-home {
+            display: inline-block;
+            margin-top: 1rem;
+            background: rgba(59,130,246,0.2);
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            color: #3b82f6;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="profile-card">
+        <div class="avatar">
+            <i class="fas fa-user-circle"></i>
+        </div>
+        <h1>{{ user.username }}</h1>
+        <p><i class="fas fa-calendar-alt"></i> 注册于 {{ user.created_at.strftime('%Y-%m-%d') if user.created_at else '未知' }}</p>
+        <p><i class="fas fa-cloud-upload-alt"></i> 公开分享的文件 · {{ files|length }} 个</p>
+        <a href="/" class="back-home"><i class="fas fa-arrow-left"></i> 返回首页</a>
+    </div>
+
+    <div class="file-grid">
+        {% for file in files %}
+        <div class="file-card">
+            <div class="file-name" title="{{ file.name }}">{{ file.name }}</div>
+            <div class="file-meta">
+                {{ file.size_human }} · 
+                <i class="fas fa-thumbs-up"></i> {{ file.likes }} · 
+                <i class="fas fa-star"></i> {{ file.collections }}
+            </div>
+            <a href="{{ url_for('numfile', num=file.id) }}?download=0" class="download-link" target="_blank">
+                <i class="fas fa-eye"></i> 预览
+            </a>
+            <a href="{{ url_for('numfile', num=file.id) }}?download=1" class="download-link" style="background:#10b981; margin-left: 0.5rem;">
+                <i class="fas fa-download"></i> 下载
+            </a>
+        </div>
+        {% else %}
+        <div class="empty">
+            <i class="fas fa-inbox" style="font-size: 2rem;"></i>
+            <p>该用户还没有公开分享任何文件</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="footer">
+        <a href="/community"><i class="fas fa-globe"></i> 社区</a>
+        <a href="/login"><i class="fas fa-sign-in-alt"></i> 登录</a>
+        <a href="/privacy">隐私政策</a>
+    </div>
+</div>
+</body>
+</html>

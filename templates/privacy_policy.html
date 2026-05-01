@@ -1,26 +1,637 @@
-星云盘 隐私政策
-生效日期：{{now_time}}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星云盘 - 隐私政策</title>
+    <style>
+        :root {
+            --bg: #f5f2ee;
+            --card-bg: #ffffff;
+            --text: #2c2c2c;
+            --text-secondary: #5a5a5a;
+            --text-muted: #7a7a7a;
+            --primary: #3b4f6b;
+            --primary-light: #5a7190;
+            --accent: #c9a87c;
+            --accent-soft: #f0e6d8;
+            --border: #eae6e0;
+            --border-light: #f2efe9;
+            --shadow-sm: 0 1px 3px rgba(44, 44, 44, 0.04), 0 1px 2px rgba(44, 44, 44, 0.03);
+            --shadow-md: 0 4px 16px rgba(44, 44, 44, 0.06), 0 2px 6px rgba(44, 44, 44, 0.04);
+            --shadow-lg: 0 12px 32px rgba(44, 44, 44, 0.07), 0 4px 12px rgba(44, 44, 44, 0.04);
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 24px;
+            --font-serif: 'Georgia', 'Noto Serif SC', 'STSong', 'Songti SC', 'SimSun', 'KaiTi', '楷体', serif;
+            --font-sans: 'Inter', 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-星云盘（以下简称“本软件”或“我们”）非常重视您的个人信息安全。本隐私政策旨在向您说明我们如何收集、使用及保护您的信息。
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-1. 信息的收集
-1.1 账户信息：为创建账户，我们可能会收集您的手机号码、邮箱地址或第三方账户信息。
-1.2 使用数据：为了优化服务，我们可能收集设备信息、日志信息（如操作记录、IP地址）。
-1.3 用户内容：您主动上传至星云盘的文件（包括文档、图片、视频等）将存储在您的账户中。
+        html {
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
 
-2. 信息的存储与保护
-2.1 尽力保护义务：我们将采用符合行业标准的安全技术（如加密存储、访问控制）来保护您的信息和上传的文件不被未经授权的访问、公开披露、篡改或毁坏。
-2.2 存储地点：您的信息及文件存储于我们的服务器中。
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg);
+            background-image:
+                radial-gradient(ellipse at 15% 10%, rgba(201, 168, 124, 0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 85% 90%, rgba(59, 79, 107, 0.05) 0%, transparent 60%),
+                radial-gradient(ellipse at 50% 50%, rgba(180, 170, 155, 0.03) 0%, transparent 80%);
+            background-attachment: fixed;
+            color: var(--text);
+            line-height: 1.7;
+            min-height: 100vh;
+            padding: 0;
+            letter-spacing: 0.01em;
+        }
 
-3. 信息的查看与管理
-3.1 审查权利：您知悉并同意，为了履行法律法规规定的网络信息安全义务，我们有权对您存储的文件内容进行查看、审查。若发现存在违法或违规内容，我们将依法采取处置措施（如删除、屏蔽）。
-3.2 内部管理：我们可能会在系统维护、故障排查或安全审计过程中接触您的文件。我们承诺仅将此权限用于保障服务正常运行，但不对因履行此类管理职责产生的偶发性影响承担责任。
+        /* ============ 顶部装饰条 ============ */
+        .top-accent-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg,
+                    var(--primary) 0%,
+                    var(--primary-light) 30%,
+                    var(--accent) 60%,
+                    var(--accent) 100%);
+            z-index: 1000;
+            opacity: 0.85;
+        }
 
-4. 免责声明
-4.1 不可抗力与第三方原因：尽管我们采取了严格的保护措施，但鉴于互联网环境的复杂性，若因不可抗力（如自然灾害、战争）、黑客攻击、计算机病毒侵入、政府管制或您自身原因（如密码泄露）导致的信息泄露、文件丢失或损坏，我们将不承担任何法律责任。
-4.2 非法内容责任：对于您上传的涉及违法、侵权或违反本协议的文件，我们不对该等文件的存续状态负责，且由该等文件引发的任何法律后果均由您自行承担。
+        /* ============ 主容器 ============ */
+        .main-wrapper {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 40px 24px 60px;
+        }
 
-5. 法律适用与解释
-5.1 本隐私政策的订立、执行和解释及争议的解决均应适用中华人民共和国法律。
-5.2 解释权：我们保留在法律允许范围内对本隐私政策进行解释的权利。
+        /* ============ 头部卡片 ============ */
+        .header-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-xl);
+            padding: 44px 48px 36px;
+            margin-top: 28px;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-light);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            transition: box-shadow var(--transition);
+        }
 
+        .header-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, var(--accent) 100%);
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        }
+
+        .header-card::after {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, rgba(201, 168, 124, 0.07) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .header-card:hover {
+            box-shadow: var(--shadow-lg), 0 16px 40px rgba(44, 44, 44, 0.09);
+        }
+
+        .logo-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: #fff;
+            font-size: 26px;
+            margin-bottom: 18px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 6px 20px rgba(59, 79, 107, 0.25);
+            letter-spacing: 0;
+        }
+
+        .header-card h1 {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e1e1e;
+            margin-bottom: 8px;
+            letter-spacing: 0.04em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-card .subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
+            letter-spacing: 0.02em;
+        }
+
+        .effective-date {
+            display: inline-block;
+            margin-top: 18px;
+            padding: 8px 22px;
+            background: var(--accent-soft);
+            color: var(--primary);
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(201, 168, 124, 0.2);
+        }
+
+        .effective-date .date-value {
+            font-weight: 600;
+            color: #3b4f6b;
+            margin-left: 2px;
+        }
+
+        /* ============ 内容卡片 ============ */
+        .content-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 40px 48px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            transition: box-shadow var(--transition);
+            position: relative;
+        }
+
+        .content-card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* ============ 章节样式 ============ */
+        .section {
+            margin-bottom: 38px;
+            position: relative;
+        }
+
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .section-number {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            box-shadow: 0 3px 10px rgba(59, 79, 107, 0.2);
+            letter-spacing: 0;
+        }
+
+        .section-title {
+            font-family: var(--font-serif);
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            letter-spacing: 0.03em;
+            padding-top: 6px;
+            line-height: 1.3;
+        }
+
+        .section-divider {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg,
+                    transparent 0%,
+                    var(--border) 15%,
+                    var(--border) 85%,
+                    transparent 100%);
+            margin: 10px 0 18px;
+        }
+
+        /* ============ 子条款 ============ */
+        .subsection {
+            margin-bottom: 14px;
+            padding-left: 18px;
+            position: relative;
+            border-left: 2px solid transparent;
+            transition: border-color var(--transition);
+            padding-top: 2px;
+            padding-bottom: 2px;
+        }
+
+        .subsection:hover {
+            border-left-color: var(--accent);
+        }
+
+        .subsection:last-child {
+            margin-bottom: 0;
+        }
+
+        .subsection-label {
+            font-weight: 650;
+            color: var(--primary);
+            font-size: 0.95rem;
+            letter-spacing: 0.02em;
+            margin-right: 4px;
+        }
+
+        .subsection-content {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.75;
+            letter-spacing: 0.015em;
+        }
+
+        /* ============ 特殊标记条款 ============ */
+        .notice-box {
+            background: #fdfaf5;
+            border: 1px solid rgba(201, 168, 124, 0.25);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            padding: 14px 18px;
+            margin: 12px 0 16px 18px;
+            font-size: 0.9rem;
+            color: #5c4a32;
+            line-height: 1.7;
+            letter-spacing: 0.015em;
+            transition: background var(--transition);
+        }
+
+        .notice-box:hover {
+            background: #fef9f2;
+        }
+
+        .notice-box strong {
+            color: #8b6914;
+            font-weight: 600;
+        }
+
+        /* ============ 免责声明样式 ============ */
+        .disclaimer-tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #8b6d4a;
+            background: var(--accent-soft);
+            padding: 3px 10px;
+            border-radius: 4px;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        /* ============ 响应式 ============ */
+        @media (max-width: 768px) {
+            .main-wrapper {
+                padding: 20px 14px 40px;
+            }
+
+            .header-card {
+                padding: 32px 22px 28px;
+                margin-top: 20px;
+                margin-bottom: 22px;
+                border-radius: var(--radius-lg);
+            }
+
+            .header-card h1 {
+                font-size: 1.55rem;
+            }
+
+            .header-card .subtitle {
+                font-size: 0.85rem;
+            }
+
+            .logo-icon {
+                width: 44px;
+                height: 44px;
+                font-size: 20px;
+                border-radius: 12px;
+                margin-bottom: 14px;
+            }
+
+            .effective-date {
+                font-size: 0.8rem;
+                padding: 7px 16px;
+                margin-top: 14px;
+            }
+
+            .content-card {
+                padding: 24px 18px;
+                border-radius: var(--radius-md);
+            }
+
+            .section {
+                margin-bottom: 28px;
+            }
+
+            .section-number {
+                width: 34px;
+                height: 34px;
+                font-size: 0.9rem;
+                border-radius: 10px;
+            }
+
+            .section-title {
+                font-size: 1.15rem;
+                padding-top: 4px;
+            }
+
+            .section-header {
+                gap: 10px;
+                margin-bottom: 12px;
+            }
+
+            .subsection {
+                padding-left: 12px;
+                margin-bottom: 10px;
+            }
+
+            .subsection-label {
+                font-size: 0.88rem;
+            }
+
+            .subsection-content {
+                font-size: 0.88rem;
+            }
+
+            .notice-box {
+                margin-left: 8px;
+                padding: 12px 14px;
+                font-size: 0.84rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-card {
+                padding: 24px 16px 22px;
+                border-radius: var(--radius-md);
+            }
+
+            .header-card h1 {
+                font-size: 1.3rem;
+            }
+
+            .content-card {
+                padding: 18px 14px;
+                border-radius: var(--radius-sm);
+            }
+
+            .section-title {
+                font-size: 1.05rem;
+            }
+
+            .section-number {
+                width: 30px;
+                height: 30px;
+                font-size: 0.8rem;
+                border-radius: 8px;
+            }
+
+            .subsection {
+                padding-left: 8px;
+            }
+        }
+
+        /* ============ 打印样式 ============ */
+        @media print {
+            body {
+                background: #fff;
+                color: #000;
+            }
+
+            .top-accent-bar {
+                display: none;
+            }
+
+            .main-wrapper {
+                max-width: 100%;
+                padding: 0;
+            }
+
+            .header-card,
+            .content-card {
+                box-shadow: none;
+                border: 1px solid #ccc;
+                border-radius: 0;
+                page-break-inside: avoid;
+            }
+
+            .header-card::before,
+            .header-card::after {
+                display: none;
+            }
+
+            .section-number {
+                background: #333;
+                color: #fff;
+                box-shadow: none;
+            }
+
+            .logo-icon {
+                background: #333;
+                box-shadow: none;
+            }
+
+            .notice-box {
+                background: #f9f9f9;
+                border: 1px solid #ddd;
+            }
+        }
+
+        /* ============ 聚焦可见 ============ */
+        a:focus-visible,
+        button:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 3px;
+            border-radius: 4px;
+        }
+
+        /* ============ 选择文本颜色 ============ */
+        ::selection {
+            background: rgba(201, 168, 124, 0.25);
+            color: #1a1a1a;
+        }
+
+        ::-moz-selection {
+            background: rgba(201, 168, 124, 0.25);
+            color: #1a1a1a;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部渐变装饰条 -->
+    <div class="top-accent-bar" aria-hidden="true"></div>
+
+    <!-- 主容器 -->
+    <div class="main-wrapper">
+
+        <!-- ========== 头部 ========== -->
+        <header class="header-card">
+            <div class="logo-icon" aria-hidden="true">☁</div>
+            <h1>星云盘 隐私政策</h1>
+            <p class="subtitle">我们珍视您的信任，全力守护您的信息安全</p>
+            <div class="effective-date">
+                生效日期：<span class="date-value">{{now_time}}</span>
+            </div>
+        </header>
+
+        <!-- ========== 正文内容 ========== -->
+        <main class="content-card" role="main">
+
+            <!-- 第1条 -->
+            <section class="section" aria-labelledby="sec1-title">
+                <div class="section-header">
+                    <span class="section-number" aria-hidden="true">1</span>
+                    <h2 class="section-title" id="sec1-title">信息的收集</h2>
+                </div>
+                <hr class="section-divider" aria-hidden="true">
+
+                <div class="subsection">
+                    <span class="subsection-label">1.1 账户信息：</span>
+                    <span class="subsection-content">为创建账户，我们可能会收集您的手机号码、邮箱地址或第三方账户信息。</span>
+                </div>
+                <div class="subsection">
+                    <span class="subsection-label">1.2 使用数据：</span>
+                    <span class="subsection-content">为了优化服务，我们可能收集设备信息、日志信息（如操作记录、IP地址）。</span>
+                </div>
+                <div class="subsection">
+                    <span class="subsection-label">1.3 用户内容：</span>
+                    <span class="subsection-content">您主动上传至星云盘的文件（包括文档、图片、视频等）将存储在您的账户中。</span>
+                </div>
+            </section>
+
+            <!-- 第2条 -->
+            <section class="section" aria-labelledby="sec2-title">
+                <div class="section-header">
+                    <span class="section-number" aria-hidden="true">2</span>
+                    <h2 class="section-title" id="sec2-title">信息的存储与保护</h2>
+                </div>
+                <hr class="section-divider" aria-hidden="true">
+
+                <div class="subsection">
+                    <span class="subsection-label">2.1 尽力保护义务：</span>
+                    <span class="subsection-content">我们将采用符合行业标准的安全技术（如加密存储、访问控制）来保护您的信息和上传的文件不被未经授权的访问、公开披露、篡改或毁坏。</span>
+                </div>
+                <div class="subsection">
+                    <span class="subsection-label">2.2 存储地点：</span>
+                    <span class="subsection-content">您的信息及文件存储于我们的服务器中。</span>
+                </div>
+            </section>
+
+            <!-- 第3条 -->
+            <section class="section" aria-labelledby="sec3-title">
+                <div class="section-header">
+                    <span class="section-number" aria-hidden="true">3</span>
+                    <h2 class="section-title" id="sec3-title">信息的查看与管理</h2>
+                </div>
+                <hr class="section-divider" aria-hidden="true">
+
+                <div class="subsection">
+                    <span class="subsection-label">3.1 审查权利：</span>
+                    <span class="subsection-content">您知悉并同意，为了履行法律法规规定的网络信息安全义务，我们有权对您存储的文件内容进行查看、审查。若发现存在违法或违规内容，我们将依法采取处置措施（如删除、屏蔽）。</span>
+                </div>
+
+                <!-- 3.2 内部管理 - 使用 notice-box 突出显示 -->
+                <div class="subsection">
+                    <span class="subsection-label">3.2 内部管理：</span>
+                    <span class="subsection-content">我们可能会在系统维护、故障排查或安全审计过程中接触您的文件。</span>
+                </div>
+                <div class="notice-box">
+                    <span class="disclaimer-tag">特别说明</span>
+                    我们承诺仅将此权限用于保障服务正常运行，但不对因履行此类管理职责产生的偶发性影响承担责任。
+                </div>
+            </section>
+
+            <!-- 第4条 -->
+            <section class="section" aria-labelledby="sec4-title">
+                <div class="section-header">
+                    <span class="section-number" aria-hidden="true">4</span>
+                    <h2 class="section-title" id="sec4-title">免责声明</h2>
+                </div>
+                <hr class="section-divider" aria-hidden="true">
+
+                <div class="subsection">
+                    <span class="subsection-label">4.1 不可抗力与第三方原因：</span>
+                </div>
+                <div class="notice-box">
+                    <span class="disclaimer-tag">免责条款</span>
+                    尽管我们采取了严格的保护措施，但鉴于互联网环境的复杂性，若因<strong>不可抗力</strong>（如自然灾害、战争）、<strong>黑客攻击</strong>、<strong>计算机病毒侵入</strong>、<strong>政府管制</strong>或<strong>您自身原因</strong>（如密码泄露）导致的信息泄露、文件丢失或损坏，我们将不承担任何法律责任。
+                </div>
+
+                <div class="subsection">
+                    <span class="subsection-label">4.2 非法内容责任：</span>
+                </div>
+                <div class="notice-box">
+                    <span class="disclaimer-tag">责任归属</span>
+                    对于您上传的涉及违法、侵权或违反本协议的文件，我们不对该等文件的存续状态负责，且由该等文件引发的任何法律后果均由<strong>您自行承担</strong>。
+                </div>
+            </section>
+
+            <!-- 第5条 -->
+            <section class="section" aria-labelledby="sec5-title">
+                <div class="section-header">
+                    <span class="section-number" aria-hidden="true">5</span>
+                    <h2 class="section-title" id="sec5-title">法律适用与解释</h2>
+                </div>
+                <hr class="section-divider" aria-hidden="true">
+
+                <div class="subsection">
+                    <span class="subsection-label">5.1</span>
+                    <span class="subsection-content">本隐私政策的订立、执行和解释及争议的解决均应适用中华人民共和国法律。</span>
+                </div>
+                <div class="subsection">
+                    <span class="subsection-label">5.2 解释权：</span>
+                    <span class="subsection-content">我们保留在法律允许范围内对本隐私政策进行解释的权利。</span>
+                </div>
+            </section>
+
+        </main>
+
+    </div>
+
+</body>
+</html>
