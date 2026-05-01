@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - 页面未找到</title>
+    <style>
+        :root {
+            --bg: #0f0f1a;
+            --card-bg: #1a1a2e;
+            --text: #e0e0e0;
+            --muted: #8888aa;
+            --accent: #6c63ff;
+            --accent-glow: #a78bfa;
+            --button-hover: #5a52e0;
+            --star-color: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ========== 星空背景 ========== */
+        .stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            background: var(--star-color);
+            border-radius: 50%;
+            animation: twinkle var(--duration) ease-in-out infinite;
+            animation-delay: var(--delay);
+            opacity: 0;
+        }
+
+        @keyframes twinkle {
+            0%,
+            100% {
+                opacity: 0.15;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.9;
+                transform: scale(1.6);
+            }
+        }
+
+        /* 流星 */
+        .shooting-star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.6);
+            animation: shoot var(--shoot-duration) linear infinite;
+            animation-delay: var(--shoot-delay);
+            opacity: 0;
+            z-index: 1;
+        }
+
+        .shooting-star::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 80px;
+            height: 1.5px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0) 90%);
+            border-radius: 1px;
+        }
+
+        @keyframes shoot {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0) rotate(-35deg);
+            }
+            5% {
+                opacity: 1;
+            }
+            15% {
+                opacity: 0;
+                transform: translate(-350px, 200px) rotate(-35deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-350px, 200px) rotate(-35deg);
+            }
+        }
+
+        /* ========== 主容器 ========== */
+        .main-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            gap: 24px;
+        }
+
+        /* ========== 404 大数字 ========== */
+        .error-code {
+            font-size: clamp(100px, 18vw, 200px);
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            line-height: 1;
+            background: linear-gradient(135deg, #6c63ff 0%, #a78bfa 30%, #c4b5fd 50%, #a78bfa 70%, #6c63ff 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 4s ease-in-out infinite;
+            filter: drop-shadow(0 0 40px rgba(108, 99, 255, 0.5));
+            user-select: none;
+            position: relative;
+        }
+
+        @keyframes gradientShift {
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+            25% {
+                background-position: 100% 0%;
+            }
+            50% {
+                background-position: 100% 100%;
+            }
+            75% {
+                background-position: 0% 100%;
+            }
+        }
+
+        /* ========== 故障效果覆盖层 ========== */
+        .glitch-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .glitch-wrapper::before,
+        .glitch-wrapper::after {
+            content: '404';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #6c63ff 0%, #a78bfa 30%, #c4b5fd 50%, #a78bfa 70%, #6c63ff 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 4s ease-in-out infinite;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .glitch-wrapper::before {
+            animation: glitch1 3s infinite;
+            clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+        }
+
+        .glitch-wrapper::after {
+            animation: glitch2 3s infinite;
+            clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+        }
+
+        @keyframes glitch1 {
+            0%,
+            90%,
+            100% {
+                opacity: 0;
+                transform: translate(0, 0);
+            }
+            92% {
+                opacity: 0.3;
+                transform: translate(-4px, -2px);
+            }
+            94% {
+                opacity: 0;
+                transform: translate(0, 0);
+            }
+        }
+
+        @keyframes glitch2 {
+            0%,
+            90%,
+            100% {
+                opacity: 0;
+                transform: translate(0, 0);
+            }
+            93% {
+                opacity: 0.25;
+                transform: translate(5px, 3px);
+            }
+            95% {
+                opacity: 0;
+                transform: translate(0, 0);
+            }
+        }
+
+        /* ========== 分隔线 ========== */
+        .divider {
+            width: 60px;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--accent);
+            box-shadow: 0 0 20px rgba(108, 99, 255, 0.7);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%,
+            100% {
+                box-shadow: 0 0 15px rgba(108, 99, 255, 0.5);
+                width: 60px;
+            }
+            50% {
+                box-shadow: 0 0 35px rgba(108, 99, 255, 0.9);
+                width: 90px;
+            }
+        }
+
+        /* ========== 文字区域 ========== */
+        .text-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .title {
+            font-size: clamp(20px, 3.5vw, 28px);
+            font-weight: 700;
+            color: #f0f0f5;
+            letter-spacing: 0.02em;
+        }
+
+        .description {
+            font-size: clamp(14px, 2vw, 17px);
+            color: var(--muted);
+            line-height: 1.7;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .description span {
+            color: #c4b5fd;
+            font-weight: 500;
+        }
+
+        /* ========== 按钮组 ========== */
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 13px 28px;
+            border-radius: 50px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.01em;
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 8px 30px rgba(108, 99, 255, 0.35);
+        }
+
+        .btn-primary:hover {
+            background: var(--button-hover);
+            box-shadow: 0 12px 40px rgba(108, 99, 255, 0.55);
+            transform: translateY(-3px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+            transition: all 0.1s ease;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #d0d0e0;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--accent-glow);
+            color: #fff;
+            background: rgba(108, 99, 255, 0.08);
+            box-shadow: 0 0 25px rgba(108, 99, 255, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .btn-outline:active {
+            transform: translateY(0);
+            transition: all 0.1s ease;
+        }
+
+        .btn-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        /* ========== 浮动粒子环 ========== */
+        .orbit-ring {
+            position: absolute;
+            border: 1px solid rgba(108, 99, 255, 0.15);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            animation: orbitSpin var(--orbit-speed) linear infinite;
+        }
+
+        .orbit-ring:nth-child(1) {
+            width: 320px;
+            height: 320px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateX(60deg);
+            --orbit-speed: 20s;
+        }
+
+        .orbit-ring:nth-child(2) {
+            width: 420px;
+            height: 420px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateX(55deg) rotateY(20deg);
+            --orbit-speed: 28s;
+            border-color: rgba(167, 139, 250, 0.1);
+        }
+
+        .orbit-dot {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: #a78bfa;
+            border-radius: 50%;
+            box-shadow: 0 0 12px 3px rgba(167, 139, 250, 0.7);
+            top: -2.5px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        @keyframes orbitSpin {
+            from {
+                transform: translate(-50%, -50%) rotateX(60deg) rotateZ(0deg);
+            }
+            to {
+                transform: translate(-50%, -50%) rotateX(60deg) rotateZ(360deg);
+            }
+        }
+
+        .orbit-ring:nth-child(2) {
+            animation-name: orbitSpin2;
+        }
+
+        @keyframes orbitSpin2 {
+            from {
+                transform: translate(-50%, -50%) rotateX(55deg) rotateY(20deg) rotateZ(0deg);
+            }
+            to {
+                transform: translate(-50%, -50%) rotateX(55deg) rotateY(20deg) rotateZ(-360deg);
+            }
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 480px) {
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+                max-width: 260px;
+            }
+            .btn {
+                justify-content: center;
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+            .orbit-ring {
+                display: none;
+            }
+            .description {
+                max-width: 300px;
+            }
+        }
+
+        /* ========== 页脚提示 ========== */
+        .footer-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.25);
+            z-index: 10;
+            pointer-events: none;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+    <!-- 星空背景 -->
+    <div class="stars-container" id="starsContainer"></div>
+
+    <!-- 轨道环装饰 -->
+    <div class="orbit-ring"><div class="orbit-dot"></div></div>
+    <div class="orbit-ring"><div class="orbit-dot"></div></div>
+
+    <!-- 主内容 -->
+    <main class="main-container" role="main" aria-label="404错误页面">
+        <!-- 404 大标题 -->
+        <div class="glitch-wrapper">
+            <span class="error-code" aria-hidden="true">404</span>
+        </div>
+        <span class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;">
+            404错误：页面未找到
+        </span>
+
+        <!-- 分隔线 -->
+        <div class="divider" aria-hidden="true"></div>
+
+        <!-- 文字说明 -->
+        <div class="text-content">
+            <h1 class="title">哎呀，页面走丢了 🧭</h1>
+            <p class="description">
+                您正在寻找的页面可能已被<span>移动</span>、<span>删除</span>，
+                或者您输入的<span>网址有误</span>。<br />
+                别着急，我们帮您找到回去的路。
+            </p>
+        </div>
+
+        <!-- 按钮 -->
+        <nav class="button-group" aria-label="导航选项">
+            <a href="/" class="btn btn-primary" aria-label="返回首页">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                返回首页
+            </a>
+            <a href="javascript:history.back()" class="btn btn-outline" aria-label="返回上一页">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"/>
+                    <polyline points="12 19 5 12 12 5"/>
+                </svg>
+                后退一步
+            </a>
+            <a href="/search" class="btn btn-outline" aria-label="搜索站内内容">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                搜索站内
+            </a>
+        </nav>
+    </main>
+
+    <!-- 底部提示 -->
+    <p class="footer-hint">Error Code: 404 — Not Found</p>
+
+    <script>
+        (function() {
+            // ========== 生成星空 ==========
+            const starsContainer = document.getElementById('starsContainer');
+            const starCount = 120;
+
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                const size = Math.random() * 2.5 + 1;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+                star.style.setProperty('--delay', (Math.random() * 4) + 's');
+                starsContainer.appendChild(star);
+            }
+
+            // ========== 生成流星 ==========
+            const shootingStarCount = 3;
+            for (let i = 0; i < shootingStarCount; i++) {
+                const shootingStar = document.createElement('div');
+                shootingStar.classList.add('shooting-star');
+                shootingStar.style.left = Math.random() * 80 + 10 + '%';
+                shootingStar.style.top = Math.random() * 30 + '%';
+                shootingStar.style.setProperty('--shoot-duration', (Math.random() * 3 + 4) + 's');
+                shootingStar.style.setProperty('--shoot-delay', (Math.random() * 8 + i * 3) + 's');
+                starsContainer.appendChild(shootingStar);
+            }
+
+            // ========== 鼠标视差效果（桌面端） ==========
+            const orbitRings = document.querySelectorAll('.orbit-ring');
+            let mouseX = 0;
+            let mouseY = 0;
+            let targetX = 0;
+            let targetY = 0;
+
+            document.addEventListener('mousemove', function(e) {
+                targetX = (e.clientX / window.innerWidth - 0.5) * 30;
+                targetY = (e.clientY / window.innerHeight - 0.5) * 30;
+            });
+
+            function animateOrbit() {
+                mouseX += (targetX - mouseX) * 0.05;
+                mouseY += (targetY - mouseY) * 0.05;
+
+                if (orbitRings[0] && window.innerWidth > 480) {
+                    orbitRings[0].style.transform =
+                        `translate(-50%, -50%) rotateX(60deg) translate(${mouseX * 0.5}px, ${mouseY * 0.5}px)`;
+                    orbitRings[1].style.transform =
+                        `translate(-50%, -50%) rotateX(55deg) rotateY(20deg) translate(${-mouseX * 0.3}px, ${-mouseY * 0.3}px)`;
+                }
+                requestAnimationFrame(animateOrbit);
+            }
+            animateOrbit();
+
+            // ========== 页面加载3秒后给流星更多随机性 ==========
+            setInterval(() => {
+                const shootingStars = document.querySelectorAll('.shooting-star');
+                shootingStars.forEach(s => {
+                    s.style.left = Math.random() * 80 + 10 + '%';
+                    s.style.top = Math.random() * 30 + '%';
+                });
+            }, 12000);
+        })();
+    </script>
+</body>
+</html>
