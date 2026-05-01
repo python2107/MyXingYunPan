@@ -3,9 +3,14 @@ import sqlite3
 import math
 import shutil
 import mimetypes
+import random
+import string
+import smtplib
 from datetime import timedelta, datetime, date
 from pathlib import Path
 from functools import wraps
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 from flask import (
     Flask, render_template, request, jsonify, send_from_directory,
@@ -13,15 +18,22 @@ from flask import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# ==================== 应用配置 ====================
+# ==================== 配置 ====================
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "change-this-in-production"
-app.config["MAX_CONTENT_LENGTH"] = 256 * 1024 * 1024  # 256 MB
+app.config["MAX_CONTENT_LENGTH"] = 256 * 1024 * 1024
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
 
 BASE_UPLOAD_FOLDER = Path("uploads")
 BASE_UPLOAD_FOLDER.mkdir(exist_ok=True)
 DATABASE = "users.db"
+
+# 邮箱配置（请修改为自己的163邮箱信息）
+EMAIL_HOST = "smtp.163.com"
+EMAIL_PORT = 465
+EMAIL_USER = ""          # 你的163邮箱地址
+EMAIL_PASSWORD = ""  # 163邮箱授权码（不是登录密码）
+VERIFICATION_CODE_EXPIRE = 300              # 验证码有效期（秒）
 
 # ==================== 数据库操作 ====================
 def get_db():
@@ -58,8 +70,23 @@ def init_db():
             cursor.execute("ALTER TABLE users ADD COLUMN coins INTEGER DEFAULT 100")
         if 'capacity_mb' not in cols:
             cursor.execute("ALTER TABLE users ADD COLUMN capacity_mb INTEGER DEFAULT 100")
+        if 'email' not in cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN email TEXT")
+            # 创建唯一索引（允许 NULL 值重复）
+            cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email IS NOT NULL")
+            print("已添加 email 列并创建唯一索引")
 
-        # 其他表
+        # 验证码表
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS email_verification_codes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL,
+                code TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                used INTEGER DEFAULT 0
+            )
+        """)
+        # 其他表（文件、星币日志、点赞、收藏、签到、兑换、好友、消息）
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS files (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -158,11 +185,15 @@ def init_db():
         admin = db.execute("SELECT id FROM users WHERE username='admin'").fetchone()
         if not admin:
             db.execute(
-                "INSERT INTO users (username, password_hash, is_admin, coins, capacity_mb) VALUES (?, ?, 1, 10000, 10240)",
-                ("admin", generate_password_hash("123465"))
+                "INSERT INTO users (username, password_hash, is_admin, coins, capacity_mb, email) VALUES (?, ?, 1, 10000, 10240, ?)",
+                ("admin", generate_password_hash("123465"), "admin@163.com")
             )
             db.commit()
             print("管理员账号已创建: admin / 123465")
+        else:
+            # 确保管理员有容量
+            db.execute("UPDATE users SET capacity_mb = 10240 WHERE username='admin' AND capacity_mb < 10240")
+            db.commit()
 init_db()
 
 # ==================== 辅助函数 ====================
@@ -283,6 +314,26 @@ def get_file_info_from_record(record):
         "created_at": record["created_at"],
         "download_url": url_for("numfile", num=record["id"])
     }
+
+# 邮件发送函数
+def send_email(to_email, subject, body):
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = EMAIL_USER
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        server = smtplib.SMTP_SSL(EMAIL_HOST, EMAIL_PORT)
+        server.login(EMAIL_USER, EMAIL_PASSWORD)
+        server.sendmail(EMAIL_USER, to_email, msg.as_string())
+        server.quit()
+        return True
+    except Exception as e:
+        print(f"邮件发送失败: {e}")
+        return False
+
+def generate_verification_code(length=6):
+    return ''.join(random.choices(string.digits, k=length))
 
 # ==================== 权限装饰器 ====================
 def login_required(f):
@@ -425,6 +476,132 @@ def numfile(num):
             return send_from_directory(path_obj.parent, path_obj.name, as_attachment=False, download_name=record["filename"])
 
 # ==================== API：认证 ====================
+@app.route("/api/send_code", methods=["POST"])
+def send_verification_code():
+    data = request.get_json()
+    email = data.get("email", "").strip().lower()
+    if not email:
+        return jsonify({"success": False, "error": "邮箱地址不能为空"}), 400
+    if "@" not in email or "." not in email:
+        return jsonify({"success": False, "error": "邮箱格式不正确"}), 400
+    code = generate_verification_code()
+    db = get_db()
+    db.execute(
+        "INSERT INTO email_verification_codes (email, code, used) VALUES (?, ?, 0)",
+        (email, code)
+    )
+    db.commit()
+    subject = "星云盘 - 邮箱验证码"
+    body = f"您的验证码是：{code}，有效期为5分钟。请勿泄露给他人。"
+    if send_email(email, subject, body):
+        return jsonify({"success": True, "message": "验证码已发送，请查收邮件"})
+    else:
+        return jsonify({"success": False, "error": "邮件发送失败，请稍后重试"}), 500
+
+@app.route("/api/register", methods=["POST"])
+def register():
+    data = request.get_json()
+    email = data.get("email", "").strip().lower()
+    code = data.get("code", "").strip()
+    password = data.get("password", "")
+    username = data.get("username", "").strip()
+    if not email or not code or not password:
+        return jsonify({"success": False, "error": "邮箱、验证码和密码不能为空"}), 400
+    if len(password) < 6:
+        return jsonify({"success": False, "error": "密码至少6位"}), 400
+    db = get_db()
+    record = db.execute(
+        "SELECT id, code, created_at FROM email_verification_codes WHERE email = ? AND used = 0 ORDER BY created_at DESC LIMIT 1",
+        (email,)
+    ).fetchone()
+    if not record:
+        return jsonify({"success": False, "error": "请先获取验证码"}), 400
+    created_at = datetime.fromisoformat(record["created_at"])
+    if (datetime.now() - created_at).seconds > VERIFICATION_CODE_EXPIRE:
+        return jsonify({"success": False, "error": "验证码已过期，请重新获取"}), 400
+    if record["code"] != code:
+        return jsonify({"success": False, "error": "验证码错误"}), 400
+    db.execute("UPDATE email_verification_codes SET used = 1 WHERE id = ?", (record["id"],))
+    db.commit()
+    if db.execute("SELECT id FROM users WHERE email = ?", (email,)).fetchone():
+        return jsonify({"success": False, "error": "该邮箱已被注册"}), 400
+    if not username:
+        username = email.split('@')[0]
+        original = username
+        counter = 1
+        while db.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone() or username == "admin":
+            username = f"{original}{counter}"
+            counter += 1
+    else:
+        if db.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone():
+            return jsonify({"success": False, "error": "用户名已存在"}), 400
+    if username == "admin":
+        return jsonify({"success": False, "error": "此用户名不可用"}), 400
+    password_hash = generate_password_hash(password)
+    try:
+        db.execute(
+            "INSERT INTO users (username, password_hash, email, is_admin, coins, capacity_mb) VALUES (?, ?, ?, 0, 100, 100)",
+            (username, password_hash, email)
+        )
+        db.commit()
+        user_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
+        get_user_folder(user_id)
+        db.execute(
+            "INSERT INTO coin_logs (user_id, change_amount, balance_after, reason) VALUES (?, 100, 100, '注册赠送100星币')",
+            (user_id,)
+        )
+        db.commit()
+        return jsonify({"success": True, "message": "注册成功"})
+    except sqlite3.IntegrityError:
+        return jsonify({"success": False, "error": "用户名或邮箱已存在"}), 400
+
+@app.route("/api/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    account = data.get("account", "").strip()
+    password = data.get("password", "")
+    code = data.get("code", "")
+    use_password = bool(password)
+    use_code = bool(code)
+    if not account:
+        return jsonify({"success": False, "error": "请输入用户名/邮箱"}), 400
+    if not use_password and not use_code:
+        return jsonify({"success": False, "error": "请输入密码或验证码"}), 400
+    if use_password and use_code:
+        return jsonify({"success": False, "error": "请选择一种登录方式（密码或验证码）"}), 400
+
+    db = get_db()
+    # 查找用户：可通过邮箱或用户名
+    user = db.execute(
+        "SELECT id, username, password_hash, is_admin, email FROM users WHERE username = ? OR email = ?",
+        (account, account)
+    ).fetchone()
+    if not user:
+        return jsonify({"success": False, "error": "用户不存在"}), 401
+
+    if use_password:
+        if not check_password_hash(user["password_hash"], password):
+            return jsonify({"success": False, "error": "密码错误"}), 401
+    else:  # 使用验证码登录
+        record = db.execute(
+            "SELECT id, code, created_at FROM email_verification_codes WHERE email = ? AND used = 0 ORDER BY created_at DESC LIMIT 1",
+            (user["email"],)
+        ).fetchone()
+        if not record:
+            return jsonify({"success": False, "error": "请先获取验证码"}), 400
+        created_at = datetime.fromisoformat(record["created_at"])
+        if (datetime.now() - created_at).seconds > VERIFICATION_CODE_EXPIRE:
+            return jsonify({"success": False, "error": "验证码已过期，请重新获取"}), 400
+        if record["code"] != code:
+            return jsonify({"success": False, "error": "验证码错误"}), 400
+        db.execute("UPDATE email_verification_codes SET used = 1 WHERE id = ?", (record["id"],))
+        db.commit()
+
+    session.permanent = True
+    session["user_id"] = user["id"]
+    session["username"] = user["username"]
+    return jsonify({"success": True, "user": {"id": user["id"], "username": user["username"], "is_admin": bool(user["is_admin"])}})
+
 @app.route("/api/check_auth")
 def check_auth():
     if "user_id" in session:
@@ -434,47 +611,6 @@ def check_auth():
             return jsonify({"success": True, "user": {"id": user["id"], "username": user["username"], "is_admin": bool(user["is_admin"])}})
         session.clear()
     return jsonify({"success": False}), 401
-
-@app.route("/api/register", methods=["POST"])
-def register():
-    data = request.get_json()
-    username = data.get("username", "").strip()
-    password = data.get("password", "")
-    if not username or not password:
-        return jsonify({"success": False, "error": "用户名和密码不能为空"}), 400
-    if len(username) < 3 or len(username) > 20:
-        return jsonify({"success": False, "error": "用户名长度3-20位"}), 400
-    if len(password) < 6:
-        return jsonify({"success": False, "error": "密码至少6位"}), 400
-    if username == "admin":
-        return jsonify({"success": False, "error": "此用户名不可用"}), 400
-    db = get_db()
-    if db.execute("SELECT id FROM users WHERE username=?", (username,)).fetchone():
-        return jsonify({"success": False, "error": "用户名已存在"}), 400
-    pwd_hash = generate_password_hash(password)
-    db.execute("INSERT INTO users (username, password_hash, is_admin, coins, capacity_mb) VALUES (?,?,0,100,100)", (username, pwd_hash))
-    db.commit()
-    uid = db.execute("SELECT last_insert_rowid()").fetchone()[0]
-    get_user_folder(uid)
-    db.execute("INSERT INTO coin_logs (user_id, change_amount, balance_after, reason) VALUES (?,100,100,'注册赠送100星币')", (uid,))
-    db.commit()
-    return jsonify({"success": True, "message": "注册成功"})
-
-@app.route("/api/login", methods=["POST"])
-def login():
-    data = request.get_json()
-    username = data.get("username", "").strip()
-    password = data.get("password", "")
-    if not username or not password:
-        return jsonify({"success": False, "error": "用户名和密码不能为空"}), 400
-    db = get_db()
-    user = db.execute("SELECT id, username, password_hash, is_admin FROM users WHERE username=?", (username,)).fetchone()
-    if not user or not check_password_hash(user["password_hash"], password):
-        return jsonify({"success": False, "error": "用户名或密码错误"}), 401
-    session.permanent = True
-    session["user_id"] = user["id"]
-    session["username"] = user["username"]
-    return jsonify({"success": True, "user": {"id": user["id"], "username": user["username"], "is_admin": bool(user["is_admin"])}})
 
 @app.route("/api/logout", methods=["POST"])
 def api_logout():
@@ -519,7 +655,6 @@ def delete_account():
     db = get_db()
     if db.execute("SELECT is_admin FROM users WHERE id=?", (uid,)).fetchone()["is_admin"]:
         return jsonify({"success": False, "error": "管理员不可注销"}), 403
-    # 删除所有文件
     files = db.execute("SELECT file_path FROM files WHERE user_id=?", (uid,)).fetchall()
     for f in files:
         Path(f["file_path"]).unlink(missing_ok=True)
@@ -824,7 +959,6 @@ def admin_delete_user(user_id):
     user = db.execute("SELECT is_admin FROM users WHERE id=?", (user_id,)).fetchone()
     if not user or user["is_admin"]:
         return jsonify({"success": False, "error": "不能删除管理员账号"}), 403
-    # 删除用户所有文件
     files = db.execute("SELECT file_path FROM files WHERE user_id=?", (user_id,)).fetchall()
     for f in files:
         Path(f["file_path"]).unlink(missing_ok=True)

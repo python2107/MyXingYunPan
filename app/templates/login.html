@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 · 星云盘</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: url("{{ url_for('static', filename='background.png') }}") no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .auth-container {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 2rem;
+            padding: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .logo i {
+            font-size: 3rem;
+            color: #3b82f6;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            border-radius: 50%;
+        }
+        .logo h1 {
+            margin-top: 1rem;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #1e293b, #2d3e5f);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .auth-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+        }
+        .auth-tab {
+            padding: 0.5rem 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #334155;
+            transition: 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+        .auth-tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .input-group input {
+            flex: 1;
+        }
+        input, button {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(203, 213, 225, 0.6);
+            border-radius: 40px;
+            padding: 10px 16px;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.2s;
+        }
+        input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        .auth-btn {
+            background: rgba(59, 130, 246, 0.9);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .auth-btn:hover {
+            background: rgba(37, 99, 235, 0.95);
+        }
+        .code-btn {
+            background: rgba(100, 116, 139, 0.8);
+            color: white;
+            border: none;
+            white-space: nowrap;
+            width: auto;
+            padding: 10px 16px;
+        }
+        .code-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .switch-login {
+            text-align: center;
+            margin: 0.5rem 0;
+            font-size: 0.85rem;
+        }
+        .switch-login span {
+            color: #3b82f6;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .error-msg {
+            color: #dc2626;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #475569;
+            font-size: 0.8rem;
+        }
+        .footer a {
+            color: #3b82f6;
+            text-decoration: none;
+            margin: 0 8px;
+        }
+        .checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+        hr {
+            margin: 0.5rem 0;
+            border-color: rgba(203, 213, 225, 0.5);
+        }
+    </style>
+</head>
+<body>
+<div class="auth-container">
+    <div class="logo">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <h1>星云盘</h1>
+    </div>
+    <div class="auth-tabs">
+        <div class="auth-tab active" data-tab="login">登录</div>
+        <div class="auth-tab" data-tab="register">注册</div>
+    </div>
+
+    <!-- 登录表单 -->
+    <div id="loginForm" class="auth-form">
+        <input type="text" id="loginAccount" placeholder="邮箱 / 用户名" autocomplete="username">
+        <!-- 密码和验证码互相切换 -->
+        <input type="password" id="loginPassword" placeholder="密码" autocomplete="current-password">
+        <div class="switch-login">
+            <span id="switchToCode">使用验证码登录</span>
+        </div>
+        <div id="codeLoginArea" style="display: none;">
+            <div class="input-group">
+                <input type="text" id="loginCode" placeholder="验证码">
+                <button type="button" id="sendLoginCodeBtn" class="code-btn">获取验证码</button>
+            </div>
+        </div>
+        <div class="checkbox">
+            <input type="checkbox" id="loginAgreeCheckbox"> 
+            <label>我已阅读并同意 <a href="/privacy" target="_blank">隐私政策</a> 和 <a href="/terms" target="_blank">用户协议</a></label>
+        </div>
+        <button id="loginBtn" class="auth-btn">登录</button>
+        <div id="loginError" class="error-msg"></div>
+    </div>
+
+    <!-- 注册表单 -->
+    <div id="registerForm" class="auth-form" style="display: none;">
+        <input type="email" id="regEmail" placeholder="邮箱地址" autocomplete="off">
+        <div class="input-group">
+            <input type="text" id="regCode" placeholder="验证码">
+            <button type="button" id="sendRegCodeBtn" class="code-btn">获取验证码</button>
+        </div>
+        <input type="password" id="regPassword" placeholder="密码 (至少6位)" autocomplete="new-password">
+        <input type="text" id="regUsername" placeholder="用户名 (选填，留空自动生成)" autocomplete="off">
+        <div class="checkbox">
+            <input type="checkbox" id="regAgreeCheckbox"> 
+            <label>我已阅读并同意 <a href="/privacy" target="_blank">隐私政策</a> 和 <a href="/terms" target="_blank">用户协议</a></label>
+        </div>
+        <button id="registerBtn" class="auth-btn">注册</button>
+        <div id="regError" class="error-msg"></div>
+    </div>
+
+    <div class="footer">
+        <i class="fas fa-lock"></i> 你的数据，安全存储
+        <br><br>
+        <a href="/privacy">隐私政策</a> |
+        <a href="/terms">用户协议</a>|
+        <a href="/">主页</a>
+    </div>
+</div>
+
+<script>
+    // DOM 元素
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
+    const loginError = document.getElementById('loginError');
+    const regError = document.getElementById('regError');
+    const switchToCode = document.getElementById('switchToCode');
+    const codeLoginArea = document.getElementById('codeLoginArea');
+    const loginPassword = document.getElementById('loginPassword');
+    const loginCode = document.getElementById('loginCode');
+    const sendLoginCodeBtn = document.getElementById('sendLoginCodeBtn');
+    const sendRegCodeBtn = document.getElementById('sendRegCodeBtn');
+    const loginAccount = document.getElementById('loginAccount');
+    const regEmail = document.getElementById('regEmail');
+    const regCode = document.getElementById('regCode');
+    const regPassword = document.getElementById('regPassword');
+    const regUsername = document.getElementById('regUsername');
+
+    let loginMode = 'password'; // 'password' or 'code'
+    let countdownTimer = null;
+
+    // 切换登录方式
+    switchToCode.addEventListener('click', () => {
+        if (loginMode === 'password') {
+            loginMode = 'code';
+            loginPassword.style.display = 'none';
+            codeLoginArea.style.display = 'block';
+            switchToCode.innerText = '使用密码登录';
+            loginPassword.value = '';
+            loginCode.value = '';
+        } else {
+            loginMode = 'password';
+            loginPassword.style.display = 'block';
+            codeLoginArea.style.display = 'none';
+            switchToCode.innerText = '使用验证码登录';
+            loginCode.value = '';
+        }
+    });
+
+    // 通用倒计时函数
+    function startCountdown(btn, seconds = 60) {
+        let remaining = seconds;
+        btn.disabled = true;
+        const originalText = btn.innerText;
+        const interval = setInterval(() => {
+            remaining--;
+            btn.innerText = `${remaining}秒后重试`;
+            if (remaining <= 0) {
+                clearInterval(interval);
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        }, 1000);
+        // 存储到全局以便清除
+        if (countdownTimer) clearInterval(countdownTimer);
+        countdownTimer = interval;
+    }
+
+    // 发送注册验证码
+    sendRegCodeBtn.addEventListener('click', async () => {
+        const email = regEmail.value.trim();
+        if (!email) {
+            regError.innerText = '请输入邮箱地址';
+            return;
+        }
+        if (!/^[^\s@]+@([^\s@]+\.)+[^\s@]+$/.test(email)) {
+            regError.innerText = '邮箱格式不正确';
+            return;
+        }
+        regError.innerText = '';
+        try {
+            const res = await fetch('/api/send_code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert('验证码已发送，请查收邮件');
+                startCountdown(sendRegCodeBtn, 60);
+            } else {
+                regError.innerText = data.error || '发送失败';
+            }
+        } catch (err) {
+            regError.innerText = '网络错误，请稍后重试';
+        }
+    });
+
+    // 发送登录验证码（仅当使用验证码登录时）
+    sendLoginCodeBtn.addEventListener('click', async () => {
+        if (loginMode !== 'code') return;
+        const account = loginAccount.value.trim();
+        // 判断输入是否为邮箱格式
+        const isEmail = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/.test(account);
+        if (!isEmail) {
+            loginError.innerText = '验证码登录需要输入邮箱地址';
+            return;
+        }
+        loginError.innerText = '';
+        try {
+            const res = await fetch('/api/send_code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: account })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert('验证码已发送，请查收邮件');
+                startCountdown(sendLoginCodeBtn, 60);
+            } else {
+                loginError.innerText = data.error || '发送失败';
+            }
+        } catch (err) {
+            loginError.innerText = '网络错误';
+        }
+    });
+
+    // 登录请求
+    async function doLogin() {
+        const account = loginAccount.value.trim();
+        if (!account) {
+            loginError.innerText = '请输入邮箱或用户名';
+            return;
+        }
+        const agree = document.getElementById('loginAgreeCheckbox').checked;
+        if (!agree) {
+            loginError.innerText = '请先阅读并同意隐私政策和用户协议';
+            return;
+        }
+        let payload = { account };
+        if (loginMode === 'password') {
+            const password = loginPassword.value;
+            if (!password) {
+                loginError.innerText = '请输入密码';
+                return;
+            }
+            payload.password = password;
+        } else {
+            const code = loginCode.value;
+            if (!code) {
+                loginError.innerText = '请输入验证码';
+                return;
+            }
+            payload.code = code;
+        }
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                window.location.href = '/';
+            } else {
+                loginError.innerText = data.error;
+            }
+        } catch (err) {
+            loginError.innerText = '网络错误，请稍后重试';
+        }
+    }
+
+    // 注册请求
+    async function doRegister() {
+        const email = regEmail.value.trim();
+        const code = regCode.value.trim();
+        const password = regPassword.value;
+        const username = regUsername.value.trim();
+        const agree = document.getElementById('regAgreeCheckbox').checked;
+        if (!email || !code || !password) {
+            regError.innerText = '请填写完整信息（邮箱、验证码、密码）';
+            return;
+        }
+        if (!/^[^\s@]+@([^\s@]+\.)+[^\s@]+$/.test(email)) {
+            regError.innerText = '邮箱格式不正确';
+            return;
+        }
+        if (password.length < 6) {
+            regError.innerText = '密码至少6位';
+            return;
+        }
+        if (!agree) {
+            regError.innerText = '请先阅读并同意隐私政策和用户协议';
+            return;
+        }
+        try {
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, code, password, username })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert('注册成功，请登录');
+                // 切换到登录标签
+                document.querySelector('.auth-tab[data-tab="login"]').click();
+                regError.innerText = '';
+                regEmail.value = '';
+                regCode.value = '';
+                regPassword.value = '';
+                regUsername.value = '';
+            } else {
+                regError.innerText = data.error;
+            }
+        } catch (err) {
+            regError.innerText = '网络错误，请稍后重试';
+        }
+    }
+
+    // 标签页切换
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const type = tab.dataset.tab;
+            if (type === 'login') {
+                loginForm.style.display = 'flex';
+                registerForm.style.display = 'none';
+                loginError.innerText = '';
+                regError.innerText = '';
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'flex';
+                loginError.innerText = '';
+                regError.innerText = '';
+            }
+        });
+    });
+
+    loginBtn.addEventListener('click', doLogin);
+    registerBtn.addEventListener('click', doRegister);
+</script>
+</body>
+</html>

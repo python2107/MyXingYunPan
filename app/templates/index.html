@@ -17,7 +17,6 @@
             color: #1e293b;
             line-height: 1.5;
         }
-        /* 导航栏 */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -78,7 +77,6 @@
             background: #2563eb;
             transform: translateY(-2px);
         }
-        /* 英雄区 */
         .hero {
             text-align: center;
             padding: 4rem 2rem;
@@ -94,7 +92,6 @@
             max-width: 600px;
             margin: 0 auto 2rem;
         }
-        /* 特性卡片 */
         .features {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -127,7 +124,6 @@
         .card p {
             color: #64748b;
         }
-        /* 底部 */
         .footer {
             text-align: center;
             padding: 2rem;
@@ -155,13 +151,13 @@
         </div>
         <div class="nav-links">
             <a href="#features">功能</a>
-            <a href="/community">社区</a>
+            <a href="{{ url_for('pages.community_page') }}">社区</a>
             {% if session.get('user_id') %}
-                <a href="{{ url_for('user_center') }}" class="btn-outline">个人中心</a>
-                <a href="{{ url_for('logout_page') }}" class="btn-outline">登出</a>
+                <a href="{{ url_for('pages.user_center') }}" class="btn-outline">个人中心</a>
+                <a href="{{ url_for('pages.logout_page') }}" class="btn-outline">登出</a>
             {% else %}
-                <a href="{{ url_for('login_page') }}" class="btn-outline">登录</a>
-                <a href="{{ url_for('login_page') }}?tab=register" class="btn-primary">免费注册</a>
+                <a href="{{ url_for('pages.login_page') }}" class="btn-outline">登录</a>
+                <a href="{{ url_for('pages.login_page') }}?tab=register" class="btn-primary">免费注册</a>
             {% endif %}
         </div>
     </nav>
@@ -170,9 +166,9 @@
         <h1>你的私有云盘 · 分享与社交</h1>
         <p>安全存储、轻松分享、与好友互动。星币系统、社区公开文件、实时聊天，完全免费。</p>
         {% if not session.get('user_id') %}
-            <a href="{{ url_for('login_page') }}" class="btn-primary">开始使用 →</a>
+            <a href="{{ url_for('pages.login_page') }}" class="btn-primary">开始使用 →</a>
         {% else %}
-            <a href="{{ url_for('user_center') }}" class="btn-primary">进入我的云盘 →</a>
+            <a href="{{ url_for('pages.user_center') }}" class="btn-primary">进入我的云盘 →</a>
         {% endif %}
     </section>
 
@@ -211,9 +207,9 @@
 
     <div class="footer">
         <div>
-            <a href="/privacy">隐私政策</a> | 
-            <a href="/terms">用户协议</a> | 
-            <a href="/community">社区</a>
+            <a href="{{ url_for('pages.privacy_policy') }}">隐私政策</a> | 
+            <a href="{{ url_for('pages.user_agreement') }}">用户协议</a> | 
+            <a href="{{ url_for('pages.community_page') }}">社区</a>
         </div>
         <p style="margin-top: 1rem;">© 2025 星云盘 · 让云存储更简单</p>
     </div>
