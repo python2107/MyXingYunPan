@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>文件管理 · 星云盘</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: url("{{ url_for('static', filename='background.png') }}") no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            padding: 1rem 2rem;
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-area i {
+            font-size: 2rem;
+            color: #3b82f6;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 8px;
+            border-radius: 18px;
+        }
+        .logo-area h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #1e293b, #2d3e5f);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            padding: 0.5rem 1.2rem;
+            border-radius: 60px;
+        }
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(203, 213, 225, 0.6);
+            padding: 6px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            color: #1e293b;
+        }
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.9);
+        }
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.9);
+            border: none;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+        /* 两列布局：左侧文件夹树，右侧文件列表 */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 1.5rem;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #3b82f6;
+            padding-left: 0.8rem;
+        }
+        .folder-tree {
+            list-style: none;
+            padding-left: 1rem;
+        }
+        .folder-tree li {
+            margin: 0.5rem 0;
+            cursor: pointer;
+            padding: 0.3rem 0.5rem;
+            border-radius: 0.5rem;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .folder-tree li:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        .folder-name {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .folder-actions button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #ef4444;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+        .file-item {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 1rem;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .file-info {
+            flex: 1;
+        }
+        .file-actions button {
+            margin-left: 0.5rem;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+        }
+        button {
+            background: rgba(59, 130, 246, 0.9);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 40px;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover {
+            background: rgba(37, 99, 235, 0.95);
+        }
+        .danger-btn {
+            background: rgba(239, 68, 68, 0.9);
+        }
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        input, select {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(203, 213, 225, 0.6);
+            border-radius: 40px;
+            padding: 6px 12px;
+            outline: none;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .toast-msg {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        @media (max-width: 768px) {
+            .dashboard { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo-area">
+            <i class="fas fa-folder-open"></i>
+            <h1>文件管理</h1>
+        </div>
+        <div class="user-info">
+            <span><i class="fas fa-user"></i> <span id="usernameDisplay"></span></span>
+            <a href="/user_center" class="btn-outline"><i class="fas fa-user-cog"></i> 个人中心</a>
+            <button id="logoutBtn" class="logout-btn">登出</button>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <!-- 左侧：文件夹树 -->
+        <div class="card">
+            <div class="flex-between">
+                <h3><i class="fas fa-folder-tree"></i> 文件夹</h3>
+                <button id="newFolderBtn" style="padding: 4px 12px;"><i class="fas fa-plus"></i> 新建</button>
+            </div>
+            <div id="folderTreeContainer" class="folder-tree">加载中...</div>
+            <div class="input-group" style="display: none;" id="newFolderInputGroup">
+                <input type="text" id="newFolderName" placeholder="文件夹名称">
+                <button id="confirmNewFolder">创建</button>
+                <button id="cancelNewFolder">取消</button>
+            </div>
+        </div>
+
+        <!-- 右侧：文件列表及上传 -->
+        <div class="card">
+            <div class="flex-between">
+                <h3 id="currentFolderTitle"><i class="fas fa-folder-open"></i> 当前：根目录</h3>
+                <div>
+                    <label style="margin-right: 10px;"><input type="checkbox" id="uploadPublicCheckbox"> 公开文件</label>
+                    <button id="uploadBtn"><i class="fas fa-upload"></i> 上传文件</button>
+                </div>
+            </div>
+            <input type="file" id="fileInput" style="display: none;" multiple>
+            <div id="fileListContainer">暂无文件</div>
+        </div>
+    </div>
+</div>
+
+<div id="toastMsg" class="toast-msg"></div>
+
+<script>
+    let currentFolderId = null;          // 当前浏览的文件夹ID，null表示根目录
+    let folderTreeData = [];             // 存储文件夹树形结构
+    let currentUser = null;
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.textContent = msg;
+        toast.style.backgroundColor = isError ? 'rgba(185, 28, 28, 0.9)' : 'rgba(30, 41, 59, 0.9)';
+        toast.style.opacity = '1';
+        setTimeout(() => toast.style.opacity = '0', 2800);
+    }
+
+    async function getUserInfo() {
+        const res = await fetch('/api/user/info');
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('usernameDisplay').innerText = data.user.username;
+            currentUser = data.user;
+        } else {
+            window.location.href = '/login';
+        }
+    }
+
+    // 加载文件夹树
+    async function loadFolderTree() {
+        const res = await fetch('/api/folders');
+        const data = await res.json();
+        if (data.success) {
+            folderTreeData = data.folders;
+            renderFolderTree(folderTreeData, 0);
+        } else {
+            document.getElementById('folderTreeContainer').innerHTML = '<p>加载失败</p>';
+        }
+    }
+
+    function renderFolderTree(nodes, level) {
+        if (!nodes.length) {
+            document.getElementById('folderTreeContainer').innerHTML = '<p>暂无文件夹</p>';
+            return;
+        }
+        let html = '<ul style="list-style:none; padding-left:0;">';
+        for (let node of nodes) {
+            html += `<li style="margin-left: ${level * 20}px;">
+                        <div class="folder-name" onclick="selectFolder(${node.id}, '${escapeHtml(node.name)}')">
+                            <i class="fas fa-folder"></i> ${escapeHtml(node.name)}
+                        </div>
+                        <div class="folder-actions">
+                            <button onclick="deleteFolder(${node.id})" class="danger-btn" style="padding:2px 8px;">删除</button>
+                        </div>
+                    </li>`;
+            if (node.children && node.children.length) {
+                html += `<div style="margin-left: ${level * 20 + 20}px;">`;
+                html += renderFolderTree(node.children, level + 1);
+                html += `</div>`;
+            }
+        }
+        html += '</ul>';
+        document.getElementById('folderTreeContainer').innerHTML = html;
+    }
+
+    // 递归渲染辅助（简化，上面直接调用）
+    window.selectFolder = async function(folderId, folderName) {
+        currentFolderId = folderId;
+        document.getElementById('currentFolderTitle').innerHTML = `<i class="fas fa-folder-open"></i> 当前：${escapeHtml(folderName)}`;
+        await loadFiles(currentFolderId);
+    };
+
+    // 加载文件列表
+    async function loadFiles(folderId = null) {
+        let url = '/api/files';
+        if (folderId) url += `?folder_id=${folderId}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.success) {
+            renderFileList(data.files);
+        } else {
+            document.getElementById('fileListContainer').innerHTML = '<p>加载失败</p>';
+        }
+    }
+
+    function renderFileList(files) {
+        if (!files.length) {
+            document.getElementById('fileListContainer').innerHTML = '<p>暂无文件</p>';
+            return;
+        }
+        let html = '';
+        for (let f of files) {
+            html += `
+                <div class="file-item">
+                    <div class="file-info">
+                        <div><strong>${escapeHtml(f.name)}</strong><br>
+                        <small>${f.size_human} · ${f.is_public ? '公开' : '私密'} · 👍 ${f.likes} · ⭐ ${f.collections}</small></div>
+                    </div>
+                    <div class="file-actions">
+                        <button onclick="togglePublic(${f.id}, ${f.is_public})">${f.is_public ? '设为私密' : '设为公开'}</button>
+                        <button onclick="copyShareLink(${f.id})"><i class="fas fa-share-alt"></i> 分享</button>
+                        <button onclick="moveFile(${f.id})"><i class="fas fa-exchange-alt"></i> 移动</button>
+                        <button onclick="deleteFile(${f.id})" class="danger-btn">删除</button>
+                    </div>
+                </div>
+            `;
+        }
+        document.getElementById('fileListContainer').innerHTML = html;
+    }
+
+    window.togglePublic = async (fileId, currentStatus) => {
+        const res = await fetch(`/api/file/toggle_public/${fileId}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            showToast(`已${data.is_public ? '公开' : '私密'}`);
+            await loadFiles(currentFolderId);
+        } else {
+            showToast(data.error, true);
+        }
+    };
+
+    window.copyShareLink = (fileId) => {
+        const link = `${window.location.origin}/numfile/${fileId}`;
+        navigator.clipboard.writeText(link);
+        showToast('分享链接已复制到剪贴板');
+    };
+
+    window.deleteFile = async (fileId) => {
+        if (!confirm('确定删除此文件？')) return;
+        const res = await fetch(`/api/delete/${fileId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+            showToast('删除成功');
+            await loadFiles(currentFolderId);
+        } else {
+            showToast(data.error, true);
+        }
+    };
+
+    window.moveFile = async (fileId) => {
+        const targetFolderId = prompt('请输入目标文件夹ID（0表示根目录）:', currentFolderId || '0');
+        if (targetFolderId === null) return;
+        const folderId = targetFolderId === '0' ? null : parseInt(targetFolderId);
+        const res = await fetch('/api/files/move', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ file_id: fileId, folder_id: folderId })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('移动成功');
+            await loadFiles(currentFolderId);
+            await loadFolderTree();
+        } else {
+            showToast(data.error, true);
+        }
+    };
+
+    window.deleteFolder = async (folderId) => {
+        if (!confirm('删除文件夹将同时删除其内所有文件和子文件夹，不可恢复！确定吗？')) return;
+        const res = await fetch(`/api/folders/${folderId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+            showToast('删除成功');
+            if (currentFolderId === folderId) {
+                currentFolderId = null;
+                document.getElementById('currentFolderTitle').innerHTML = `<i class="fas fa-folder-open"></i> 当前：根目录`;
+                await loadFiles(null);
+            }
+            await loadFolderTree();
+        } else {
+            showToast(data.error, true);
+        }
+    };
+
+    // 新建文件夹
+    document.getElementById('newFolderBtn').addEventListener('click', () => {
+        document.getElementById('newFolderInputGroup').style.display = 'flex';
+    });
+    document.getElementById('cancelNewFolder').addEventListener('click', () => {
+        document.getElementById('newFolderInputGroup').style.display = 'none';
+        document.getElementById('newFolderName').value = '';
+    });
+    document.getElementById('confirmNewFolder').addEventListener('click', async () => {
+        const name = document.getElementById('newFolderName').value.trim();
+        if (!name) {
+            showToast('请输入文件夹名称', true);
+            return;
+        }
+        const parentId = currentFolderId; // 在当前打开的文件夹下创建
+        const res = await fetch('/api/folders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, parent_id: parentId })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('文件夹创建成功');
+            document.getElementById('newFolderName').value = '';
+            document.getElementById('newFolderInputGroup').style.display = 'none';
+            await loadFolderTree();
+        } else {
+            showToast(data.error, true);
+        }
+    });
+
+    // 上传文件
+    document.getElementById('uploadBtn').addEventListener('click', () => {
+        document.getElementById('fileInput').click();
+    });
+    document.getElementById('fileInput').addEventListener('change', async (e) => {
+        const files = e.target.files;
+        if (!files.length) return;
+        const isPublic = document.getElementById('uploadPublicCheckbox').checked ? 1 : 0;
+        for (let file of files) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('is_public', isPublic);
+            if (currentFolderId) formData.append('folder_id', currentFolderId);
+            try {
+                const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`上传成功，获得星币奖励`);
+                } else {
+                    showToast(data.error, true);
+                }
+            } catch (err) {
+                showToast('上传失败', true);
+            }
+        }
+        await loadFiles(currentFolderId);
+        document.getElementById('fileInput').value = '';
+    });
+
+    // 登出
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        await fetch('/api/logout', { method: 'POST' });
+        window.location.href = '/';
+    });
+
+    async function init() {
+        await getUserInfo();
+        await loadFolderTree();
+        await loadFiles(currentFolderId);
+    }
+    init();
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+</script>
+</body>
+</html>

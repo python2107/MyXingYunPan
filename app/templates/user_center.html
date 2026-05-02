@@ -3,28 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>我的云盘 · 个人中心</title>
+    <title>个人中心 · 星云盘</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
         }
-
         body {
             background: url("{{ url_for('static', filename='background.png') }}") no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
-            padding: 1.5rem;
+            padding: 2rem 1.5rem;
         }
-
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
         }
-
+        /* 头部导航 */
         .header {
             display: flex;
             justify-content: space-between;
@@ -38,29 +36,22 @@
             border-radius: 2rem;
             border: 1px solid rgba(255, 255, 255, 0.6);
         }
-
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .logo a {
+            text-decoration: none;
+            color: inherit;
         }
-
-        .logo-area i {
-            font-size: 2rem;
-            color: #3b82f6;
-            background: rgba(255, 255, 255, 0.6);
-            padding: 8px;
-            border-radius: 18px;
-        }
-
-        .logo-area h1 {
+        .logo {
             font-size: 1.5rem;
-            background: linear-gradient(135deg, #1e293b, #2d3e5f);
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
         }
-
+        .logo i {
+            margin-right: 0.5rem;
+            color: #3b82f6;
+        }
         .user-info {
             display: flex;
             align-items: center;
@@ -70,7 +61,19 @@
             padding: 0.5rem 1.2rem;
             border-radius: 60px;
         }
-
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(203, 213, 225, 0.6);
+            padding: 6px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            color: #1e293b;
+        }
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.9);
+        }
         .logout-btn {
             background: rgba(239, 68, 68, 0.9);
             border: none;
@@ -79,71 +82,26 @@
             border-radius: 40px;
             cursor: pointer;
         }
-
         .dashboard {
             display: grid;
-            grid-template-columns: 320px 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
         }
-
         .card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(8px);
             border-radius: 1.5rem;
-            padding: 1.2rem;
+            padding: 1.5rem;
             margin-bottom: 1.5rem;
             border: 1px solid rgba(255, 255, 255, 0.4);
         }
-
         .card h3 {
             font-size: 1.2rem;
             margin-bottom: 1rem;
             border-left: 4px solid #3b82f6;
             padding-left: 0.8rem;
         }
-
-        .main-content {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(8px);
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-        }
-
-        .tab-buttons {
-            display: flex;
-            gap: 0.5rem;
-            border-bottom: 1px solid rgba(203, 213, 225, 0.6);
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .tab-btn {
-            background: transparent;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            font-size: 1rem;
-            cursor: pointer;
-            border-radius: 40px;
-            transition: 0.2s;
-            color: #334155;
-        }
-
-        .tab-btn.active {
-            background: rgba(59, 130, 246, 0.2);
-            color: #3b82f6;
-            font-weight: 600;
-        }
-
-        .tab-pane {
-            display: none;
-        }
-
-        .tab-pane.active {
-            display: block;
-        }
-
-        input, textarea, select {
+        input, button {
             background: rgba(255, 255, 255, 0.8);
             border: 1px solid rgba(203, 213, 225, 0.6);
             border-radius: 40px;
@@ -152,30 +110,23 @@
             margin-bottom: 0.8rem;
             outline: none;
         }
-
         button {
             background: rgba(59, 130, 246, 0.9);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 40px;
             color: white;
             cursor: pointer;
             transition: 0.2s;
+            width: auto;
         }
-
         button:hover {
             background: rgba(37, 99, 235, 0.95);
         }
-
         .danger-btn {
             background: rgba(239, 68, 68, 0.9);
         }
-
         .danger-btn:hover {
             background: rgba(220, 38, 38, 0.95);
         }
-
-        .file-item, .friend-item, .msg-item {
+        .friend-item {
             background: rgba(255, 255, 255, 0.6);
             border-radius: 1rem;
             padding: 0.8rem;
@@ -183,65 +134,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
+            cursor: pointer;
+            transition: 0.2s;
         }
-
-        .file-actions button, .friend-actions button {
-            margin-left: 0.5rem;
-            padding: 4px 10px;
-            font-size: 0.8rem;
-        }
-
-        .chat-box {
-            height: 300px;
-            overflow-y: auto;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 1rem;
-            padding: 0.8rem;
-            margin-bottom: 0.8rem;
-        }
-
-        .msg-bubble {
-            margin-bottom: 0.5rem;
-            padding: 0.5rem;
-            border-radius: 1rem;
-            max-width: 80%;
-        }
-
-        .msg-sent {
-            background: #3b82f6;
-            color: white;
-            margin-left: auto;
-            text-align: right;
-        }
-
-        .msg-received {
+        .friend-item:hover {
             background: rgba(255, 255, 255, 0.8);
-            color: #1e293b;
+            transform: translateX(5px);
         }
-
-        .badge {
-            background: #f59e0b;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-        }
-
         .flex-between {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
         }
-
         .mt-2 {
-            margin-top: 0.8rem;
+            margin-top: 1rem;
         }
-
-        .text-center {
-            text-align: center;
-        }
-
         .toast-msg {
             position: fixed;
             bottom: 25px;
@@ -258,7 +166,18 @@
             transition: opacity 0.2s;
             pointer-events: none;
         }
-
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.5);
+            border-radius: 1rem;
+        }
+        .footer a {
+            color: #3b82f6;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
         @media (max-width: 768px) {
             .dashboard {
                 grid-template-columns: 1fr;
@@ -272,123 +191,79 @@
 <body>
 <div class="container">
     <div class="header">
-        <div class="logo-area">
-            <i class="fas fa-cloud-upload-alt"></i>
-            <h1>星云盘 · 个人中心</h1>
+        <div class="logo">
+            <a href="/"><i class="fas fa-cloud-upload-alt"></i> 星云盘</a>
         </div>
         <div class="user-info">
             <span><i class="fas fa-user"></i> <span id="usernameDisplay"></span></span>
             <span><i class="fas fa-coins"></i> <span id="coinBalance">0</span> 星币</span>
+            <a href="/dashboard" class="btn-outline">📁 文件管理</a>
+            <a href="{{ url_for('pages.user_profile', name=session.get('username')) }}" class="btn-outline">我的主页</a>
             <button id="logoutBtn" class="logout-btn">登出</button>
         </div>
     </div>
 
     <div class="dashboard">
-        <!-- 左侧边栏 -->
-        <div class="sidebar">
+        <!-- 左侧：账户设置 + 星币操作 -->
+        <div>
             <div class="card">
-                <h3><i class="fas fa-chart-line"></i> 账户概览</h3>
-                <div><strong>用户名：</strong> <span id="profileUsername"></span></div>
-                <div><strong>注册时间：</strong> <span id="joinedAt"></span></div>
-                <div><strong>存储容量：</strong> <span id="capacityUsed"></span> MB / <span id="capacityTotal"></span> MB</div>
-                <div><strong>星币：</strong> <span id="sidebarCoins"></span></div>
-                <button id="signInBtn" class="mt-2"><i class="fas fa-calendar-check"></i> 每日签到 (+10星币)</button>
-                <div class="mt-2">
-                    <label>兑换容量：</label>
-                    <div class="flex-between">
-                        <input type="number" id="exchangeCoins" placeholder="星币数量" style="width: 60%;">
-                        <button id="exchangeBtn">兑换</button>
-                    </div>
-                    <small>1星币 = 0.5MB</small>
-                </div>
+                <h3><i class="fas fa-user-edit"></i> 修改资料</h3>
+                <input type="text" id="newUsername" placeholder="新用户名 (3-20位)" value="">
+                <input type="email" id="newEmail" placeholder="新邮箱">
+                <button id="updateProfileBtn">保存修改</button>
+                <div id="profileMsg" style="color: green; margin-top: 0.5rem;"></div>
             </div>
 
             <div class="card">
-                <h3><i class="fas fa-users"></i> 好友</h3>
-                <div class="flex-between">
-                    <input type="text" id="searchUserInput" placeholder="搜索用户..." style="width: 70%;">
-                    <button id="searchUserBtn">搜索</button>
-                </div>
-                <div id="searchResults" style="max-height: 150px; overflow-y: auto; margin-top: 0.5rem;"></div>
-                <hr>
-                <div><strong>好友列表</strong></div>
-                <div id="friendsList" style="max-height: 200px; overflow-y: auto;"></div>
-                <div><strong>好友请求</strong></div>
-                <div id="pendingRequests"></div>
-            </div>
-
-            <div class="card">
-                <h3><i class="fas fa-comments"></i> 聊天</h3>
-                <select id="chatFriendSelect">
-                    <option value="">选择好友</option>
-                </select>
-                <div id="chatMessages" class="chat-box"></div>
-                <div class="flex-between">
-                    <input type="text" id="messageInput" placeholder="输入消息..." style="width: 75%;">
-                    <button id="sendMsgBtn">发送</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 右侧主内容区域 -->
-        <div class="main-content">
-            <div class="tab-buttons">
-                <button class="tab-btn active" data-tab="files">我的文件</button>
-                <button class="tab-btn" data-tab="collections">我的收藏</button>
-                <button class="tab-btn" data-tab="settings">账户设置</button>
-                <button class="tab-btn" data-tab="communityLink">🌐 社区</button>
-            </div>
-
-            <!-- 我的文件 -->
-            <div id="filesTab" class="tab-pane active">
-                <div class="flex-between">
-                    <h3>文件管理</h3>
-                    <label style="display: flex; align-items: center; gap: 8px;">
-                        <input type="checkbox" id="uploadPublicCheckbox"> 公开此文件
-                        <button id="uploadBtn"><i class="fas fa-upload"></i> 上传文件</button>
-                    </label>
-                </div>
-                <input type="file" id="fileInput" style="display: none;" multiple>
-                <div id="myFilesList"></div>
-            </div>
-
-            <!-- 我的收藏 -->
-            <div id="collectionsTab" class="tab-pane">
-                <h3>收藏的文件</h3>
-                <div id="collectionsList"></div>
-            </div>
-
-            <!-- 账户设置 -->
-            <div id="settingsTab" class="tab-pane">
-                <h3>修改密码</h3>
+                <h3><i class="fas fa-key"></i> 修改密码</h3>
                 <input type="password" id="oldPassword" placeholder="原密码">
                 <input type="password" id="newPassword" placeholder="新密码 (至少6位)">
                 <button id="changePwdBtn">修改密码</button>
                 <div id="pwdMsg" style="color: red; margin-top: 0.5rem;"></div>
-                <hr class="mt-2">
-                <h3>注销账号</h3>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-coins"></i> 星币操作</h3>
+                <div class="flex-between">
+                    <button id="signInBtn"><i class="fas fa-calendar-check"></i> 每日签到 (+10)</button>
+                    <div style="display: flex; gap: 8px; width: 60%;">
+                        <input type="number" id="exchangeCoins" placeholder="星币数量" style="width: 60%;">
+                        <button id="exchangeBtn">兑换容量</button>
+                    </div>
+                </div>
+                <small>1星币 = 0.5MB · 当前容量: <span id="capacityInfo">--</span></small>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-exclamation-triangle"></i> 危险操作</h3>
                 <button id="deleteAccountBtn" class="danger-btn">⚠️ 永久注销账号</button>
                 <div id="deleteMsg" style="color: red; margin-top: 0.5rem;"></div>
             </div>
+        </div>
 
-            <!-- 社区链接 -->
-            <div id="communityLinkTab" class="tab-pane text-center">
-                <p>浏览其他用户分享的公开文件，点赞收藏可获得星币奖励。</p>
-                <button onclick="window.location.href='/community'">进入社区 →</button>
+        <!-- 右侧：好友列表 -->
+        <div>
+            <div class="card">
+                <h3><i class="fas fa-users"></i> 我的好友</h3>
+                <div id="friendsList"></div>
+                <div class="mt-2">
+                    <a href="/friends" class="btn-outline" style="display:inline-block; text-align:center; width:100%;">📖 查看全部好友 →</a>
+                </div>
             </div>
         </div>
+    </div>
+
+    <div class="footer">
+        <a href="/privacy">隐私政策</a> | 
+        <a href="/terms">用户协议</a> | 
+        <a href="/community">社区</a>
+        <p style="margin-top: 0.5rem;">© 2026 星云盘 · 由 Python 2107 维护 · <a href="https://github.com/python2107/MyXingYunPan" target="_blank">Open in GitHub</a></p>
     </div>
 </div>
 
 <div id="toastMsg" class="toast-msg"></div>
 
 <script>
-    // 全局变量
-    let currentFriendId = null;
-    let messagePollInterval = null;
-    let currentUserId = null;
-
-    // 辅助函数
     function showToast(msg, isError = false) {
         const toast = document.getElementById('toastMsg');
         toast.textContent = msg;
@@ -397,30 +272,18 @@
         setTimeout(() => toast.style.opacity = '0', 2800);
     }
 
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    // 加载用户基本信息
     async function loadUserInfo() {
         try {
             const res = await fetch('/api/user/info');
             const data = await res.json();
             if (data.success) {
                 const u = data.user;
-                document.getElementById('profileUsername').innerText = u.username;
-                document.getElementById('joinedAt').innerText = new Date(u.joined_at).toLocaleString();
-                document.getElementById('capacityUsed').innerText = u.capacity_used_mb;
-                document.getElementById('capacityTotal').innerText = u.capacity_total_mb;
-                document.getElementById('sidebarCoins').innerText = u.coins;
-                document.getElementById('coinBalance').innerText = u.coins;
                 document.getElementById('usernameDisplay').innerText = u.username;
+                document.getElementById('coinBalance').innerText = u.coins;
+                document.getElementById('capacityInfo').innerText = `${u.capacity_used_mb}MB / ${u.capacity_total_mb}MB`;
+                // 填充当前用户名和邮箱到修改表单的占位符（但不设置值，让用户自行输入）
+                document.getElementById('newUsername').placeholder = `当前: ${u.username}`;
+                document.getElementById('newEmail').placeholder = `当前: ${u.email || '未设置'}`;
             } else {
                 showToast('加载用户信息失败', true);
             }
@@ -429,17 +292,51 @@
         }
     }
 
-    // 刷新星币余额
     async function refreshCoins() {
         const res = await fetch('/api/user/coins');
         const data = await res.json();
         if (data.success) {
-            document.getElementById('sidebarCoins').innerText = data.coins;
             document.getElementById('coinBalance').innerText = data.coins;
         }
     }
 
-    // 每日签到
+    // 修改资料（用户名/邮箱）
+    document.getElementById('updateProfileBtn').addEventListener('click', async () => {
+        const username = document.getElementById('newUsername').value.trim();
+        const email = document.getElementById('newEmail').value.trim();
+        if (!username && !email) {
+            showToast('请至少填写一项修改内容', true);
+            return;
+        }
+        const payload = {};
+        if (username) payload.username = username;
+        if (email) payload.email = email;
+
+        const res = await fetch('/api/user/update_profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('资料修改成功');
+            document.getElementById('profileMsg').innerText = '修改成功';
+            setTimeout(() => document.getElementById('profileMsg').innerText = '', 2000);
+            loadUserInfo(); // 刷新用户显示
+            // 如果用户名改变，更新页面上的用户名显示和会话中的用户名
+            if (username) {
+                document.getElementById('usernameDisplay').innerText = username;
+                // 可选：重新加载页面以更新所有链接中的用户名
+                // 但为了简单，提示用户刷新
+                showToast('建议刷新页面以生效', false);
+            }
+        } else {
+            document.getElementById('profileMsg').style.color = 'red';
+            document.getElementById('profileMsg').innerText = data.error;
+        }
+    });
+
+    // 签到
     document.getElementById('signInBtn').addEventListener('click', async () => {
         const res = await fetch('/api/user/sign_in', { method: 'POST' });
         const data = await res.json();
@@ -474,252 +371,6 @@
             showToast(data.error, true);
         }
     });
-
-    // 文件管理：加载我的文件
-    async function loadMyFiles() {
-        const res = await fetch('/api/files');
-        const data = await res.json();
-        if (data.success && data.files) {
-            renderFiles(data.files);
-        } else {
-            document.getElementById('myFilesList').innerHTML = '<p>暂无文件</p>';
-        }
-    }
-
-    function renderFiles(files) {
-        if (!files.length) {
-            document.getElementById('myFilesList').innerHTML = '<p>暂无文件</p>';
-            return;
-        }
-        let html = '';
-        for (let f of files) {
-            html += `
-                <div class="file-item">
-                    <div><i class="fas fa-file"></i> <strong>${escapeHtml(f.name)}</strong><br>
-                    <small>${f.size_human} · ${f.is_public ? '公开' : '私密'} · 👍 ${f.likes} · ⭐ ${f.collections}</small></div>
-                    <div class="file-actions">
-                        <button onclick="togglePublic(${f.id})">${f.is_public ? '设为私密' : '设为公开'}</button>
-                        <button onclick="deleteFile(${f.id})" class="danger-btn">删除</button>
-                    </div>
-                </div>
-            `;
-        }
-        document.getElementById('myFilesList').innerHTML = html;
-    }
-
-    window.togglePublic = async function(fileId) {
-        const res = await fetch(`/api/file/toggle_public/${fileId}`, { method: 'POST' });
-        const data = await res.json();
-        if (data.success) {
-            showToast(`已${data.is_public ? '公开' : '私密'}`);
-            loadMyFiles();
-        } else {
-            showToast(data.error, true);
-        }
-    };
-
-    window.deleteFile = async function(fileId) {
-        if (!confirm('确定删除此文件？')) return;
-        const res = await fetch(`/api/delete/${fileId}`, { method: 'DELETE' });
-        const data = await res.json();
-        if (data.success) {
-            showToast('删除成功');
-            loadMyFiles();
-        } else {
-            showToast(data.error, true);
-        }
-    };
-
-    // 上传文件
-    document.getElementById('uploadBtn').addEventListener('click', () => {
-        document.getElementById('fileInput').click();
-    });
-    document.getElementById('fileInput').addEventListener('change', async (e) => {
-        const files = e.target.files;
-        if (!files.length) return;
-        const isPublic = document.getElementById('uploadPublicCheckbox').checked ? 1 : 0;
-        for (let file of files) {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('is_public', isPublic);
-            try {
-                const res = await fetch('/api/upload', { method: 'POST', body: formData });
-                const data = await res.json();
-                if (data.success) {
-                    showToast(`上传成功，获得星币奖励`);
-                    loadMyFiles();
-                    refreshCoins();
-                    loadUserInfo();
-                } else {
-                    showToast(data.error, true);
-                }
-            } catch (err) {
-                showToast('上传失败', true);
-            }
-        }
-        document.getElementById('fileInput').value = '';
-    });
-
-    // 收藏列表
-    async function loadCollections() {
-        const res = await fetch('/api/user/my_collections');
-        const data = await res.json();
-        if (data.success && data.files) {
-            let html = '';
-            for (let f of data.files) {
-                html += `<div class="file-item">
-                    <div><strong>${escapeHtml(f.name)}</strong><br><small>上传者: ${f.uploader} · ${f.size_human}</small></div>
-                    <div><a href="${f.download_url}" target="_blank">下载</a></div>
-                </div>`;
-            }
-            document.getElementById('collectionsList').innerHTML = html || '<p>暂无收藏</p>';
-        } else {
-            document.getElementById('collectionsList').innerHTML = '<p>暂无收藏</p>';
-        }
-    }
-
-    // 好友相关
-    async function loadFriends() {
-        const res = await fetch('/api/friends');
-        const data = await res.json();
-        if (data.success) {
-            // 好友列表
-            let friendsHtml = '';
-            for (let f of data.friends) {
-                friendsHtml += `<div class="friend-item">
-                    <span>${escapeHtml(f.username)}</span>
-                    <button onclick="selectChatFriend(${f.id}, '${escapeHtml(f.username)}')">聊天</button>
-                </div>`;
-            }
-            document.getElementById('friendsList').innerHTML = friendsHtml || '<p>暂无好友</p>';
-            // 填充聊天选择下拉框
-            const select = document.getElementById('chatFriendSelect');
-            select.innerHTML = '<option value="">选择好友</option>';
-            for (let f of data.friends) {
-                select.innerHTML += `<option value="${f.id}">${escapeHtml(f.username)}</option>`;
-            }
-            // 待处理请求
-            let pendingHtml = '';
-            for (let req of data.pending_requests) {
-                pendingHtml += `<div class="friend-item">
-                    <span>${escapeHtml(req.username)} 请求添加好友</span>
-                    <button onclick="acceptRequest(${req.request_id})">接受</button>
-                </div>`;
-            }
-            document.getElementById('pendingRequests').innerHTML = pendingHtml || '<p>暂无请求</p>';
-        }
-    }
-
-    window.selectChatFriend = function(id, username) {
-        currentFriendId = id;
-        document.getElementById('chatFriendSelect').value = id;
-        loadMessages();
-        if (messagePollInterval) clearInterval(messagePollInterval);
-        messagePollInterval = setInterval(loadMessages, 3000);
-    };
-
-    document.getElementById('chatFriendSelect').addEventListener('change', (e) => {
-        const id = parseInt(e.target.value);
-        if (id) {
-            currentFriendId = id;
-            loadMessages();
-            if (messagePollInterval) clearInterval(messagePollInterval);
-            messagePollInterval = setInterval(loadMessages, 3000);
-        } else {
-            currentFriendId = null;
-            if (messagePollInterval) clearInterval(messagePollInterval);
-        }
-    });
-
-    async function loadMessages() {
-        if (!currentFriendId) return;
-        const res = await fetch(`/api/messages?friend_id=${currentFriendId}`);
-        const data = await res.json();
-        if (data.success) {
-            const chatDiv = document.getElementById('chatMessages');
-            let html = '';
-            for (let msg of data.messages) {
-                const isSent = msg.sender_id === currentUserId;
-                html += `<div class="msg-bubble ${isSent ? 'msg-sent' : 'msg-received'}">
-                            ${escapeHtml(msg.content)}<br><small>${new Date(msg.time).toLocaleTimeString()}</small>
-                         </div>`;
-            }
-            chatDiv.innerHTML = html;
-            chatDiv.scrollTop = chatDiv.scrollHeight;
-        }
-    }
-
-    async function sendMessage() {
-        if (!currentFriendId) {
-            showToast('请先选择好友', true);
-            return;
-        }
-        const content = document.getElementById('messageInput').value.trim();
-        if (!content) return;
-        const res = await fetch('/api/messages/send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ receiver_id: currentFriendId, content })
-        });
-        const data = await res.json();
-        if (data.success) {
-            document.getElementById('messageInput').value = '';
-            loadMessages();
-        } else {
-            showToast(data.error, true);
-        }
-    }
-    document.getElementById('sendMsgBtn').addEventListener('click', sendMessage);
-
-    // 搜索用户并添加好友
-    document.getElementById('searchUserBtn').addEventListener('click', async () => {
-        const query = document.getElementById('searchUserInput').value.trim();
-        if (query.length < 2) return;
-        const res = await fetch(`/api/friends/search?q=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        if (data.success && data.users.length) {
-            let html = '';
-            for (let u of data.users) {
-                html += `<div class="friend-item">
-                    <span>${escapeHtml(u.username)}</span>
-                    <button onclick="sendFriendRequest(${u.id})">添加好友</button>
-                </div>`;
-            }
-            document.getElementById('searchResults').innerHTML = html;
-        } else {
-            document.getElementById('searchResults').innerHTML = '<p>未找到用户</p>';
-        }
-    });
-
-    window.sendFriendRequest = async function(toUserId) {
-        const res = await fetch('/api/friends/request', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ to_user_id: toUserId })
-        });
-        const data = await res.json();
-        if (data.success) {
-            showToast('好友请求已发送');
-            document.getElementById('searchResults').innerHTML = '';
-        } else {
-            showToast(data.error, true);
-        }
-    };
-
-    window.acceptRequest = async function(requestId) {
-        const res = await fetch('/api/friends/accept', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ request_id: requestId })
-        });
-        const data = await res.json();
-        if (data.success) {
-            showToast('已添加好友');
-            loadFriends();
-        } else {
-            showToast(data.error, true);
-        }
-    };
 
     // 修改密码
     document.getElementById('changePwdBtn').addEventListener('click', async () => {
@@ -758,7 +409,7 @@
             const data = await res.json();
             if (data.success) {
                 showToast('账号已注销，即将跳转...');
-                setTimeout(() => window.location.href = '/login', 1500);
+                setTimeout(() => window.location.href = '/', 1500);
             } else {
                 document.getElementById('deleteMsg').innerText = data.error;
             }
@@ -768,43 +419,40 @@
     // 登出
     document.getElementById('logoutBtn').addEventListener('click', async () => {
         await fetch('/api/logout', { method: 'POST' });
-        window.location.href = '/login';
+        window.location.href = '/';
     });
 
-    // 标签页切换
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const tabId = btn.getAttribute('data-tab');
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-            if (tabId === 'files') document.getElementById('filesTab').classList.add('active');
-            else if (tabId === 'collections') {
-                document.getElementById('collectionsTab').classList.add('active');
-                loadCollections();
-            }
-            else if (tabId === 'settings') document.getElementById('settingsTab').classList.add('active');
-            else if (tabId === 'communityLink') document.getElementById('communityLinkTab').classList.add('active');
-        });
-    });
-
-    // 获取当前用户ID
-    async function getCurrentUserId() {
-        const res = await fetch('/api/check_auth');
+    // 加载好友列表（仅显示最近5条）
+    async function loadFriends() {
+        const res = await fetch('/api/friends');
         const data = await res.json();
-        if (data.success) currentUserId = data.user.id;
-        else window.location.href = '/login';
+        if (data.success && data.friends.length) {
+            let html = '';
+            for (let f of data.friends.slice(0, 5)) {
+                html += `<div class="friend-item" onclick="window.location.href='/user/${f.username}'">
+                    <span><i class="fas fa-user-circle"></i> ${escapeHtml(f.username)}</span>
+                    <i class="fas fa-chevron-right"></i>
+                </div>`;
+            }
+            document.getElementById('friendsList').innerHTML = html;
+        } else {
+            document.getElementById('friendsList').innerHTML = '<p>暂无好友，去社区添加吧~</p>';
+        }
     }
 
-    // 初始化
-    async function init() {
-        await getCurrentUserId();
-        await loadUserInfo();
-        await loadMyFiles();
-        await loadFriends();
-        setInterval(refreshCoins, 30000);
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
     }
-    init();
+
+    loadUserInfo();
+    loadFriends();
+    setInterval(refreshCoins, 30000);
 </script>
 </body>
 </html>

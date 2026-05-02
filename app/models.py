@@ -1,6 +1,5 @@
 # app/models.py
 import sqlite3
-import os
 import math
 import shutil
 from datetime import date, datetime
@@ -11,7 +10,6 @@ from config import DATABASE, UPLOAD_FOLDER
 
 # ---------- 数据库连接 ----------
 def get_db():
-    """获取当前请求的数据库连接"""
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
@@ -19,7 +17,6 @@ def get_db():
     return db
 
 def close_connection(exception):
-    """请求结束后关闭数据库连接"""
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
@@ -40,16 +37,22 @@ def init_db(app):
             )
         """)
         cursor.execute("PRAGMA table_info(users)")
-        cols = [c[1] for c in cursor.fetchall()]
-        if 'is_admin' not in cols:
+        existing_columns = [col[1] for col in cursor.fetchall()]
+
+        # 添加缺失列
+        if 'is_admin' not in existing_columns:
             cursor.execute("ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0")
-        if 'coins' not in cols:
+        if 'coins' not in existing_columns:
             cursor.execute("ALTER TABLE users ADD COLUMN coins INTEGER DEFAULT 100")
-        if 'capacity_mb' not in cols:
+        if 'capacity_mb' not in existing_columns:
             cursor.execute("ALTER TABLE users ADD COLUMN capacity_mb INTEGER DEFAULT 100")
-        if 'email' not in cols:
+        if 'email' not in existing_columns:
             cursor.execute("ALTER TABLE users ADD COLUMN email TEXT")
             cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email IS NOT NULL")
+        if 'followers_count' not in existing_columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN followers_count INTEGER DEFAULT 0")
+        if 'following_count' not in existing_columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN following_count INTEGER DEFAULT 0")
 
         # 验证码表
         cursor.execute("""
@@ -73,8 +76,23 @@ def init_db(app):
                 is_public INTEGER DEFAULT 0,
                 likes INTEGER DEFAULT 0,
                 collections INTEGER DEFAULT 0,
+                folder_id INTEGER DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users(id)
+                FOREIGN KEY (user_id) REFERENCES users(id),
+                FOREIGN KEY (folder_id) REFERENCES folders(id)
+            )
+        """)
+
+        # 文件夹表
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS folders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                parent_id INTEGER DEFAULT NULL,
+                name TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id),
+                FOREIGN KEY (parent_id) REFERENCES folders(id) ON DELETE CASCADE
             )
         """)
 
@@ -156,17 +174,34 @@ def init_db(app):
             )
         """)
 
-        # 聊天消息表
+        # 聊天消息表（支持类型和文件ID）
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS messages (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 sender_id INTEGER NOT NULL,
                 receiver_id INTEGER NOT NULL,
-                content TEXT NOT NULL,
+                content TEXT,
+                type TEXT DEFAULT 'text',
+                file_id INTEGER DEFAULT NULL,
+                image_url TEXT DEFAULT NULL,
                 is_read INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (sender_id) REFERENCES users(id),
-                FOREIGN KEY (receiver_id) REFERENCES users(id)
+                FOREIGN KEY (receiver_id) REFERENCES users(id),
+                FOREIGN KEY (file_id) REFERENCES files(id)
+            )
+        """)
+
+        # 关注表
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS followers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,      -- 被关注者
+                follower_id INTEGER NOT NULL,  -- 关注者
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id),
+                FOREIGN KEY (follower_id) REFERENCES users(id),
+                UNIQUE(user_id, follower_id)
             )
         """)
 
@@ -188,7 +223,6 @@ def init_db(app):
 
 # ---------- 用户文件夹辅助函数 ----------
 def get_user_folder(user_id: int) -> Path:
-    """获取用户专属文件夹路径，不存在则创建"""
     folder = Path(UPLOAD_FOLDER) / str(user_id)
     folder.mkdir(exist_ok=True)
     return folder
@@ -200,7 +234,6 @@ def get_user_coins(user_id: int) -> int:
     return row["coins"] if row else 0
 
 def update_user_coins(user_id: int, delta: int, reason: str) -> bool:
-    """调整用户星币，返回是否成功（余额不能为负）"""
     db = get_db()
     current = get_user_coins(user_id)
     new_balance = current + delta
@@ -216,7 +249,6 @@ def update_user_coins(user_id: int, delta: int, reason: str) -> bool:
 
 # ---------- 容量相关 ----------
 def get_user_capacity(user_id: int) -> int:
-    """返回用户当前已用容量（MB）"""
     db = get_db()
     total_bytes = db.execute(
         "SELECT COALESCE(SUM(size_bytes), 0) FROM files WHERE user_id = ?", (user_id,)
@@ -224,7 +256,6 @@ def get_user_capacity(user_id: int) -> int:
     return math.ceil(total_bytes / (1024 * 1024))
 
 def check_capacity(user_id: int, new_file_size_bytes: int) -> bool:
-    """检查上传后是否会超出容量限制"""
     db = get_db()
     user = db.execute("SELECT capacity_mb FROM users WHERE id = ?", (user_id,)).fetchone()
     if not user:
@@ -244,7 +275,6 @@ def can_sign_in(user_id: int) -> bool:
     return record is None
 
 def do_sign_in(user_id: int) -> int:
-    """执行签到，返回获得的星币数（固定10）"""
     if not can_sign_in(user_id):
         return 0
     gain = 10
@@ -296,18 +326,105 @@ def accept_friend_request(req_id: int, user_id: int) -> bool:
     db.commit()
     return True
 
-# ---------- 文件信息辅助（可选，便于蓝图使用）----------
-def get_file_info_from_record(record):
-    """将数据库记录转换为前端需要的文件信息字典"""
-    from app.utils import human_readable_size  # 避免循环导入，延迟导入
-    return {
-        "id": record["id"],
-        "name": record["filename"],
-        "size": record["size_bytes"],
-        "size_human": human_readable_size(record["size_bytes"]),
-        "is_public": bool(record["is_public"]),
-        "likes": record["likes"],
-        "collections": record["collections"],
-        "created_at": record["created_at"],
-        "download_url": f"/numfile/{record['id']}"
-    }
+# ---------- 关注相关 ----------
+def follow_user(follower_id: int, user_id: int) -> bool:
+    """follower_id 关注 user_id"""
+    if follower_id == user_id:
+        return False
+    db = get_db()
+    try:
+        db.execute("INSERT INTO followers (user_id, follower_id) VALUES (?, ?)", (user_id, follower_id))
+        db.execute("UPDATE users SET followers_count = followers_count + 1 WHERE id = ?", (user_id,))
+        db.execute("UPDATE users SET following_count = following_count + 1 WHERE id = ?", (follower_id,))
+        db.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+
+def unfollow_user(follower_id: int, user_id: int) -> bool:
+    db = get_db()
+    db.execute("DELETE FROM followers WHERE user_id = ? AND follower_id = ?", (user_id, follower_id))
+    db.execute("UPDATE users SET followers_count = followers_count - 1 WHERE id = ?", (user_id,))
+    db.execute("UPDATE users SET following_count = following_count - 1 WHERE id = ?", (follower_id,))
+    db.commit()
+    return True
+
+def is_following(follower_id: int, user_id: int) -> bool:
+    db = get_db()
+    row = db.execute("SELECT id FROM followers WHERE user_id = ? AND follower_id = ?", (user_id, follower_id)).fetchone()
+    return row is not None
+
+def get_followers(user_id: int, limit=20):
+    db = get_db()
+    rows = db.execute("""
+        SELECT u.id, u.username FROM followers f
+        JOIN users u ON f.follower_id = u.id
+        WHERE f.user_id = ? LIMIT ?
+    """, (user_id, limit)).fetchall()
+    return [{"id": r["id"], "username": r["username"]} for r in rows]
+
+def get_following(user_id: int, limit=20):
+    db = get_db()
+    rows = db.execute("""
+        SELECT u.id, u.username FROM followers f
+        JOIN users u ON f.user_id = u.id
+        WHERE f.follower_id = ? LIMIT ?
+    """, (user_id, limit)).fetchall()
+    return [{"id": r["id"], "username": r["username"]} for r in rows]
+
+# ---------- 文件夹相关 ----------
+def create_folder(user_id: int, name: str, parent_id=None) -> int:
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        "INSERT INTO folders (user_id, name, parent_id) VALUES (?, ?, ?)",
+        (user_id, name, parent_id)
+    )
+    db.commit()
+    return cursor.lastrowid
+
+def delete_folder(folder_id: int, user_id: int):
+    db = get_db()
+    # 获取文件夹下的所有文件
+    files = db.execute("SELECT file_path FROM files WHERE folder_id = ? AND user_id = ?", (folder_id, user_id)).fetchall()
+    for f in files:
+        Path(f["file_path"]).unlink(missing_ok=True)
+    db.execute("DELETE FROM files WHERE folder_id = ? AND user_id = ?", (folder_id, user_id))
+    # 递归删除子文件夹（通过外键级联，但需要手动清理子文件夹记录）
+    subfolders = db.execute("SELECT id FROM folders WHERE parent_id = ? AND user_id = ?", (folder_id, user_id)).fetchall()
+    for sub in subfolders:
+        delete_folder(sub["id"], user_id)
+    db.execute("DELETE FROM folders WHERE id = ? AND user_id = ?", (folder_id, user_id))
+    db.commit()
+
+def move_file_to_folder(file_id: int, folder_id: int, user_id: int):
+    db = get_db()
+    db.execute("UPDATE files SET folder_id = ? WHERE id = ? AND user_id = ?", (folder_id, file_id, user_id))
+    db.commit()
+
+def get_folder_tree(user_id: int):
+    db = get_db()
+    rows = db.execute(
+        "SELECT id, name, parent_id FROM folders WHERE user_id = ? ORDER BY parent_id, name",
+        (user_id,)
+    ).fetchall()
+    tree = {}
+    for row in rows:
+        tree[row["id"]] = {"id": row["id"], "name": row["name"], "parent_id": row["parent_id"], "children": []}
+    roots = []
+    for node in tree.values():
+        if node["parent_id"] is None:
+            roots.append(node)
+        else:
+            if node["parent_id"] in tree:
+                tree[node["parent_id"]]["children"].append(node)
+    return roots
+
+# ---------- 消息扩展 ----------
+def send_file_message(sender_id: int, receiver_id: int, file_id: int, content=""):
+    db = get_db()
+    db.execute(
+        "INSERT INTO messages (sender_id, receiver_id, type, file_id, content) VALUES (?, ?, 'file', ?, ?)",
+        (sender_id, receiver_id, file_id, content)
+    )
+    db.commit()

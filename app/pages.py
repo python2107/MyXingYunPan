@@ -1,7 +1,7 @@
 # app/pages.py
 import mimetypes
 from pathlib import Path
-from flask import Blueprint, render_template, send_from_directory, send_file, abort, session, redirect, url_for
+from flask import Blueprint, render_template, send_from_directory, send_file, abort, session, redirect, url_for, request
 from datetime import datetime
 from config import UPLOAD_FOLDER
 from app.models import get_db
@@ -27,9 +27,24 @@ def logout_page():
 
 @pages_bp.route('/user_center')
 def user_center():
+    """账户设置 + 星币 + 好友列表入口"""
     if 'user_id' not in session:
         return redirect(url_for('pages.login_page'))
     return render_template('user_center.html')
+
+@pages_bp.route('/dashboard')
+def dashboard():
+    """文件管理（上传、文件夹、公开/私密切换）"""
+    if 'user_id' not in session:
+        return redirect(url_for('pages.login_page'))
+    return render_template('dashboard.html')
+
+@pages_bp.route('/friends')
+def friends_page():
+    """单独的好友列表页面"""
+    if 'user_id' not in session:
+        return redirect(url_for('pages.login_page'))
+    return render_template('friends.html')
 
 @pages_bp.route('/community')
 def community_page():
@@ -37,7 +52,6 @@ def community_page():
 
 @pages_bp.route('/admin')
 def admin_panel():
-    # 简单检查是否为管理员
     if 'user_id' not in session:
         return redirect(url_for('pages.login_page'))
     db = get_db()
@@ -56,13 +70,13 @@ def user_agreement():
     now = datetime.now().strftime("%Y年%m月%d日 %H:%M")
     return render_template('user_agreement.html', now_time=now)
 
-# ==================== 用户公开主页 ====================
 @pages_bp.route('/user/<string:name>')
 def user_profile(name):
     db = get_db()
-    user = db.execute('SELECT id, username, created_at FROM users WHERE username = ?', (name,)).fetchone()
+    user = db.execute('SELECT id, username, created_at, followers_count, following_count FROM users WHERE username = ?', (name,)).fetchone()
     if not user:
         abort(404)
+    # 获取公开文件
     files = db.execute(
         'SELECT id, filename, size_bytes, likes, collections, created_at FROM files WHERE user_id = ? AND is_public = 1 ORDER BY created_at DESC',
         (user['id'],)
@@ -76,9 +90,16 @@ def user_profile(name):
         'created_at': f['created_at'],
         'download_url': url_for('pages.numfile', num=f['id'])
     } for f in files]
-    return render_template('user_profile.html', user=user, files=file_list)
+    # 判断当前登录用户是否关注了该用户
+    is_following = False
+    if 'user_id' in session:
+        follower_id = session['user_id']
+        if follower_id != user['id']:
+            check = db.execute('SELECT id FROM followers WHERE user_id = ? AND follower_id = ?', (user['id'], follower_id)).fetchone()
+            is_following = check is not None
+    return render_template('user_profile.html', user=user, files=file_list, is_following=is_following)
 
-# ==================== 通过文件ID访问 ====================
+# ==================== 文件访问 ====================
 @pages_bp.route('/numfile/<int:num>')
 def numfile(num):
     db = get_db()
@@ -115,7 +136,6 @@ def numfile(num):
                 download_name=record['filename']
             )
 
-# ==================== 通过路径访问文件 ====================
 @pages_bp.route('/pathfile/<string:path>')
 def pathfile(path):
     if '/' not in path:

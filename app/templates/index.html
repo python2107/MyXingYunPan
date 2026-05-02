@@ -28,6 +28,10 @@
             top: 0;
             z-index: 100;
         }
+        .logo a {
+            text-decoration: none;
+            color: inherit;
+        }
         .logo {
             font-size: 1.5rem;
             font-weight: 700;
@@ -46,7 +50,6 @@
             font-weight: 500;
             transition: 0.2s;
         }
-        /* 下划线悬停按钮样式 (用于普通导航链接) */
         .nav-link {
             color: #334155;
             position: relative;
@@ -68,90 +71,18 @@
         .nav-link:hover::before {
             width: 100%;
         }
-
-        /* 按钮通用样式清除 */
-        .btn-outline, .btn-primary, .gradient-button, .arrow-button {
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-
-        /* 样式一：渐变霓虹按钮 (用于主要操作) */
-        .gradient-button {
-            position: relative;
-            padding: 12px 28px;
-            font-size: 18px;
-            font-weight: bold;
-            color: white;
+        .btn-outline {
             background: transparent;
-            border-radius: 50px;
-            overflow: hidden;
-            transition: transform 0.2s ease;
+            color: #3b82f6;
+            border: 1px solid #3b82f6;
+            padding: 6px 18px;
+            border-radius: 30px;
+            transition: 0.2s;
         }
-        .gradient-button:hover {
-            transform: scale(1.03);
+        .btn-outline:hover {
+            background: #3b82f6;
+            color: white;
         }
-        .gradient-button::before {
-            content: "";
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(
-                from 0deg,
-                #ff6b6b,
-                #4ecdc4,
-                #45b7d1,
-                #96ceb4,
-                #feca57,
-                #ff9ff3,
-                #ff6b6b
-            );
-            z-index: -2;
-            filter: blur(10px);
-            transform: rotate(0deg);
-            transition: transform 1.5s ease-in-out;
-        }
-        .gradient-button:hover::before {
-            transform: rotate(180deg);
-        }
-        .gradient-button::after {
-            content: "";
-            position: absolute;
-            inset: 3px;
-            background: black;
-            border-radius: 47px;
-            z-index: -1;
-            filter: blur(5px);
-        }
-        .gradient-text {
-            color: transparent;
-            background: conic-gradient(
-                from 0deg,
-                #ff6b6b,
-                #4ecdc4,
-                #45b7d1,
-                #96ceb4,
-                #feca57,
-                #ff9ff3,
-                #ff6b6b
-            );
-            background-clip: text;
-            filter: hue-rotate(0deg);
-        }
-        .gradient-button:hover .gradient-text {
-            animation: hue-rotating 2s linear infinite;
-        }
-        @keyframes hue-rotating {
-            to { filter: hue-rotate(360deg); }
-        }
-
-        /* 样式二：带箭头悬浮的按钮 (用于次要操作，如登录) */
         .arrow-button {
             --primary-color: #645bff;
             --secondary-color: #fff;
@@ -166,6 +97,7 @@
             align-items: center;
             gap: 0.6em;
             font-weight: bold;
+            text-decoration: none;
         }
         .arrow-button .arrow-wrapper {
             display: flex;
@@ -202,24 +134,78 @@
         .arrow-button:hover .arrow:before {
             right: 0;
         }
-
-        /* 保留原 .btn-outline 风格，但改用下划线按钮（导航专用） */
-        .btn-outline {
-            background: transparent;
-            color: #3b82f6;
-            border: 1px solid #3b82f6;
-            padding: 6px 18px;
-            border-radius: 30px;
-            transition: 0.2s;
-        }
-        .btn-outline:hover {
-            background: #3b82f6;
+        .gradient-button {
+            position: relative;
+            padding: 12px 28px;
+            font-size: 18px;
+            font-weight: bold;
             color: white;
+            background: transparent;
+            border-radius: 50px;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
         }
-
-        /* 英雄区的按钮使用渐变按钮，但可保留arrow-button备用 */
+        .gradient-button .gradient-text {
+            color: transparent;
+            background: conic-gradient(
+                from 0deg,
+                #ff6b6b,
+                #4ecdc4,
+                #45b7d1,
+                #96ceb4,
+                #feca57,
+                #ff9ff3,
+                #ff6b6b
+            );
+            background-clip: text;
+            filter: hue-rotate(0deg);
+        }
+        .gradient-button::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                from 0deg,
+                #ff6b6b,
+                #4ecdc4,
+                #45b7d1,
+                #96ceb4,
+                #feca57,
+                #ff9ff3,
+                #ff6b6b
+            );
+            z-index: -2;
+            filter: blur(10px);
+            transform: rotate(0deg);
+            transition: transform 1.5s ease-in-out;
+        }
+        .gradient-button:hover::before {
+            transform: rotate(180deg);
+        }
+        .gradient-button::after {
+            content: "";
+            position: absolute;
+            inset: 3px;
+            background: black;
+            border-radius: 47px;
+            z-index: -1;
+            filter: blur(5px);
+        }
+        .gradient-button:hover {
+            transform: scale(1.03);
+        }
+        .gradient-button:hover .gradient-text {
+            animation: hue-rotating 2s linear infinite;
+        }
+        @keyframes hue-rotating {
+            to { filter: hue-rotate(360deg); }
+        }
         .hero .btn-primary {
-            /* 应用渐变样式 */
             position: relative;
             padding: 12px 28px;
             font-size: 18px;
@@ -230,6 +216,7 @@
             overflow: hidden;
             transition: transform 0.2s ease;
             display: inline-block;
+            text-decoration: none;
         }
         .hero .btn-primary::before {
             content: "";
@@ -265,12 +252,21 @@
             z-index: -1;
             filter: blur(5px);
         }
-        .hero .btn-primary {
-            background: transparent;
-            line-height: 1;
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
         }
-
-        /* 特性卡片区样式保留 */
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            color: #475569;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
         .features {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -326,13 +322,15 @@
 <body>
     <nav class="navbar">
         <div class="logo">
-            <i class="fas fa-cloud-upload-alt"></i> 星云盘
+            <a href="/"><i class="fas fa-cloud-upload-alt"></i> 星云盘</a>
         </div>
         <div class="nav-links">
             <a href="#features" class="nav-link">功能</a>
             <a href="{{ url_for('pages.community_page') }}" class="nav-link">社区</a>
             {% if session.get('user_id') %}
+                <a href="{{ url_for('pages.user_profile', name=session.get('username')) }}" class="nav-link">我的主页</a>
                 <a href="{{ url_for('pages.user_center') }}" class="btn-outline">个人中心</a>
+                <a href="{{ url_for('pages.dashboard') }}" class="btn-outline">文件管理</a>
                 <a href="{{ url_for('pages.logout_page') }}" class="btn-outline">登出</a>
             {% else %}
                 <a href="{{ url_for('pages.login_page') }}" class="arrow-button">登录 <span class="arrow-wrapper"><span class="arrow"></span></span></a>
@@ -347,7 +345,7 @@
         {% if not session.get('user_id') %}
             <a href="{{ url_for('pages.login_page') }}" class="btn-primary">开始使用 →</a>
         {% else %}
-            <a href="{{ url_for('pages.user_center') }}" class="btn-primary">进入我的云盘 →</a>
+            <a href="{{ url_for('pages.dashboard') }}" class="btn-primary">进入我的云盘 →</a>
         {% endif %}
     </section>
 
@@ -355,12 +353,12 @@
         <div class="card">
             <i class="fas fa-upload"></i>
             <h3>文件存储与管理</h3>
-            <p>支持任意格式文件，自动生成分享链接，可设置公开或私密。</p>
+            <p>支持任意格式文件，自动生成分享链接，可设置公开或私密，支持文件夹分类。</p>
         </div>
         <div class="card">
             <i class="fas fa-comments"></i>
             <h3>好友聊天</h3>
-            <p>添加好友，实时消息，打造你的社交圈。</p>
+            <p>添加好友，实时消息，支持发送云盘文件和图片。</p>
         </div>
         <div class="card">
             <i class="fas fa-globe"></i>
@@ -390,7 +388,7 @@
             <a href="{{ url_for('pages.user_agreement') }}">用户协议</a> | 
             <a href="{{ url_for('pages.community_page') }}">社区</a>
         </div>
-        <p style="margin-top: 1rem;">© 2025 星云盘 · 让云存储更简单</p>
+        <p style="margin-top: 1rem;">© 2026 星云盘 · 由 Python 2107 维护 · <a href="https://github.com/python2107/MyXingYunPan" target="_blank">Open in GitHub</a></p>
     </div>
 </body>
 </html>
