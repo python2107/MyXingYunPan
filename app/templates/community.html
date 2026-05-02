@@ -6,6 +6,7 @@
     <title>社区 · 星云盘</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* ===== 全局样式 ===== */
         * {
             margin: 0;
             padding: 0;
@@ -19,10 +20,10 @@
             padding: 2rem 1.5rem;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
-        /* 头部 */
+        /* 头部半透 */
         .header {
             display: flex;
             justify-content: space-between;
@@ -88,76 +89,9 @@
         /* 文件网格 */
         .file-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 2rem;
             margin-top: 1rem;
-        }
-        .file-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(8px);
-            border-radius: 1.5rem;
-            padding: 1.2rem;
-            transition: 0.2s;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-        }
-        .file-card:hover {
-            transform: translateY(-4px);
-            background: rgba(255, 255, 255, 0.95);
-        }
-        .file-title {
-            font-weight: 700;
-            font-size: 1.1rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 0.5rem;
-        }
-        .file-meta {
-            font-size: 0.8rem;
-            color: #475569;
-            margin-bottom: 0.8rem;
-        }
-        .file-stats {
-            display: flex;
-            gap: 1rem;
-            margin: 0.8rem 0;
-            font-size: 0.9rem;
-        }
-        .file-stats span {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .file-actions {
-            display: flex;
-            gap: 0.8rem;
-            margin-top: 1rem;
-            flex-wrap: wrap;
-        }
-        button, .download-link {
-            background: rgba(59, 130, 246, 0.9);
-            border: none;
-            padding: 6px 14px;
-            border-radius: 40px;
-            color: white;
-            cursor: pointer;
-            transition: 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.85rem;
-        }
-        button:hover, .download-link:hover {
-            background: rgba(37, 99, 235, 0.95);
-        }
-        .like-btn, .collect-btn {
-            background: rgba(255, 255, 255, 0.7);
-            color: #1e293b;
-            border: 1px solid rgba(203, 213, 225, 0.6);
-        }
-        .like-btn:hover, .collect-btn:hover {
-            background: rgba(255, 255, 255, 0.9);
         }
         .empty-state {
             text-align: center;
@@ -182,9 +116,218 @@
             transition: opacity 0.2s;
             pointer-events: none;
         }
-        @media (max-width: 640px) {
-            body { padding: 1rem; }
-            .file-grid { grid-template-columns: 1fr; }
+        /* 以下为点赞收藏组件的样式（来自 Uiverse） */
+        .like-dislike-container {
+            --dark-grey: #353535;
+            --middle-grey: #767676;
+            --lightest-grey: linear-gradient(#fafafa,#ebebeb);
+            --shadow: 0 5px 15px 0 #00000026;
+            --shadow-active: 0 5px 5px 0 #00000026;
+            --border-radius-main: 10px;
+            --border-radius-icon: 50px;
+            position: relative;
+            display: flex;
+            text-align: center;
+            flex-direction: column;
+            align-items: center;
+            cursor: default;
+            color: var(--dark-grey);
+            opacity: .9;
+            margin: 0;
+            padding: 1rem;
+            font-weight: 600;
+            background: var(--lightest-grey);
+            max-width: 100%;
+            border-radius: var(--border-radius-main);
+            box-shadow: var(--shadow);
+            transition: .2s ease all;
+        }
+        .like-dislike-container:hover {
+            box-shadow: var(--shadow-active);
+        }
+        .like-dislike-container .icons-box {
+            display: flex;
+            gap: 1.5rem;
+        }
+        .like-dislike-container .icons {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: .6;
+            cursor: pointer;
+            user-select: none;
+            border: 1px solid var(--middle-grey);
+            border-radius: var(--border-radius-icon);
+            transition: .2s ease all;
+        }
+        .like-dislike-container .icons:hover {
+            opacity: .9;
+            box-shadow: var(--shadow);
+        }
+        .like-dislike-container .icons:active {
+            opacity: .9;
+            box-shadow: var(--shadow-active);
+        }
+        .like-dislike-container .icons .btn-label {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 0.5rem;
+            cursor: pointer;
+            position: relative;
+        }
+        .like-dislike-container .like-text-content {
+            border-right: 0.1rem solid var(--dark-grey);
+            padding: 0 0.6rem 0 0.5rem;
+            pointer-events: none;
+        }
+        .like-dislike-container .collect-text-content {
+            border-left: 0.1rem solid var(--dark-grey);
+            padding: 0 0.5rem 0 0.6rem;
+            pointer-events: none;
+        }
+        .like-dislike-container .icons .svgs {
+            width: 1.3rem;
+            fill: #000000;
+            box-sizing: content-box;
+            padding: 10px 10px;
+            transition: .2s ease all;
+        }
+        .like-dislike-container .icons .input-box {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+        .like-dislike-container .icons #icon-like-regular {
+            display: block;
+        }
+        .like-dislike-container .icons #icon-like-solid {
+            display: none;
+        }
+        .like-dislike-container .icons:hover :is(#icon-like-solid, #icon-like-regular) {
+            animation: rotate-icon-like 0.7s ease-in-out both;
+        }
+        .like-dislike-container .icons #like-checkbox:checked ~ #icon-like-regular {
+            display: none;
+            animation: checked-icon-like 0.5s;
+        }
+        .like-dislike-container .icons #like-checkbox:checked ~ #icon-like-solid {
+            display: block;
+            animation: checked-icon-like 0.5s;
+        }
+        .like-dislike-container .icons #icon-collect-regular {
+            display: block;
+        }
+        .like-dislike-container .icons #icon-collect-solid {
+            display: none;
+        }
+        .like-dislike-container .icons:hover :is(#icon-collect-solid, #icon-collect-regular) {
+            animation: rotate-icon-collect 0.7s ease-in-out both;
+        }
+        .like-dislike-container .icons #collect-checkbox:checked ~ #icon-collect-regular {
+            display: none;
+            animation: checked-icon-collect 0.5s;
+        }
+        .like-dislike-container .icons #collect-checkbox:checked ~ #icon-collect-solid {
+            display: block;
+            animation: checked-icon-collect 0.5s;
+        }
+        .like-dislike-container .icons .fireworks {
+            transform: scale(0.4);
+        }
+        .like-dislike-container .icons #like-checkbox:checked ~ .fireworks > .checked-like-fx {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            right: 40px;
+            border-radius: 50%;
+            box-shadow: 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff;
+            animation: 1s fireworks-bang ease-out forwards, 1s fireworks-gravity ease-in forwards, 5s fireworks-position linear forwards;
+            animation-duration: 1.25s, 1.25s, 6.25s;
+        }
+        .like-dislike-container .icons #collect-checkbox:checked ~ .fireworks > .checked-collect-fx {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            left: 40px;
+            border-radius: 50%;
+            box-shadow: 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff;
+            animation: 1s fireworks-bang ease-out forwards, 1s fireworks-gravity ease-in forwards, 5s fireworks-position linear forwards;
+            animation-duration: 1.25s, 1.25s, 6.25s;
+        }
+        @keyframes rotate-icon-like {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(3deg); }
+            50% { transform: rotate(-3deg); }
+            75% { transform: rotate(1deg); }
+            100% { transform: rotate(0deg); }
+        }
+        @keyframes rotate-icon-collect {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+            75% { transform: rotate(-1deg); }
+            100% { transform: rotate(0deg); }
+        }
+        @keyframes checked-icon-like {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2) rotate(-10deg); }
+        }
+        @keyframes checked-icon-collect {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2) rotate(10deg); }
+        }
+        @keyframes fireworks-position {
+            0%, 19.9% { margin-top: 10%; margin-left: 40%; }
+            20%, 39.9% { margin-top: 40%; margin-left: 30%; }
+            40%, 59.9% { margin-top: 20%; margin-left: 70%; }
+            60%, 79.9% { margin-top: 30%; margin-left: 20%; }
+            80%, 99.9% { margin-top: 30%; margin-left: 80%; }
+        }
+        @keyframes fireworks-gravity {
+            to { transform: translateY(200px); opacity: 0; }
+        }
+        @keyframes fireworks-bang {
+            to { box-shadow: 114px -107.3333333333px #8800ff, 212px -166.3333333333px #a600ff, 197px -6.3333333333px #ff006a, 179px -329.3333333333px #3300ff, -167px -262.3333333333px #ff0062, 233px 65.6666666667px #ff008c, 81px 42.6666666667px #0051ff, -13px 54.6666666667px #00ff2b, -60px -183.3333333333px #0900ff, 127px -259.3333333333px #ff00e6, 117px -122.3333333333px #00b7ff, 95px 20.6666666667px #ff8000, 115px 1.6666666667px #0004ff, -160px -328.3333333333px #00ff40, 69px -242.3333333333px #000dff, -208px -230.3333333333px #ff0400, 30px -15.3333333333px #e6ff00, 235px -15.3333333333px #fb00ff, 80px -232.3333333333px #d5ff00, 175px -173.3333333333px #00ff3c, -187px -176.3333333333px #aaff00, 4px 26.6666666667px #ff6f00, 227px -106.3333333333px #ff0099, 119px 17.6666666667px #00ffd5, -102px 4.6666666667px #ff0088, -16px -4.3333333333px #00fff7, -201px -310.3333333333px #00ffdd, 64px -181.3333333333px #f700ff, -234px -15.3333333333px #00fffb, -184px -263.3333333333px #aa00ff, 96px -303.3333333333px #0037ff, -139px 10.6666666667px #0026ff, 25px -205.3333333333px #00ff2b, -129px -322.3333333333px #40ff00, -235px -187.3333333333px #26ff00, -136px -237.3333333333px #0091ff, -82px -321.3333333333px #6a00ff, 7px -267.3333333333px #ff00c8, -155px 30.6666666667px #0059ff, -85px -73.3333333333px #6a00ff, 60px -199.3333333333px #55ff00, -9px -289.3333333333px #00ffaa, -208px -167.3333333333px #00ff80, -13px -299.3333333333px #ff0004, 179px -164.3333333333px #ff0044, -112px 12.6666666667px #0051ff, -209px -125.3333333333px #ff00bb, 14px -101.3333333333px #00ff95, -184px -292.3333333333px #ff0099, -26px -168.3333333333px #09ff00, 129px -67.3333333333px #0084ff, -17px -23.3333333333px #0059ff, 129px 34.6666666667px #7300ff, 35px -24.3333333333px #ffd900, -12px -297.3333333333px #ff8400, 129px -156.3333333333px #0dff00, 157px -29.3333333333px #1a00ff, -221px 6.6666666667px #ff0062, 0px -311.3333333333px #ff006a, 155px 50.6666666667px #00ffaa, -71px -318.3333333333px #0073ff; }
+        }
+        /* 文件卡片内容 */
+        .file-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+        .file-card:hover {
+            transform: translateY(-4px);
+        }
+        .file-info {
+            padding: 1rem 1rem 0.5rem 1rem;
+        }
+        .file-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .file-meta {
+            font-size: 0.8rem;
+            color: #475569;
+            margin: 0.3rem 0;
+        }
+        .download-link {
+            display: inline-block;
+            margin: 0.5rem 1rem 1rem 1rem;
+            background: #3b82f6;
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 0.8rem;
         }
     </style>
 </head>
@@ -195,9 +338,7 @@
             <i class="fas fa-globe"></i>
             <h1>星云盘 · 社区</h1>
         </div>
-        <div class="user-info" id="userInfoArea">
-            <!-- 动态显示登录/未登录状态 -->
-        </div>
+        <div class="user-info" id="userInfoArea"></div>
     </div>
 
     <h2 style="margin-bottom: 1rem;"><i class="fas fa-share-alt"></i> 公开文件分享</h2>
@@ -211,7 +352,6 @@
 <script>
     let currentUser = null;
 
-    // 辅助函数
     function showToast(msg, isError = false) {
         const toast = document.getElementById('toastMsg');
         toast.textContent = msg;
@@ -220,7 +360,6 @@
         setTimeout(() => toast.style.opacity = '0', 2800);
     }
 
-    // 检查登录状态
     async function checkAuth() {
         try {
             const res = await fetch('/api/check_auth');
@@ -249,7 +388,6 @@
         }
     }
 
-    // 加载公开文件列表
     async function loadCommunityFiles() {
         try {
             const res = await fetch('/api/community/files');
@@ -268,79 +406,81 @@
     function renderFileList(files) {
         let html = '';
         for (let file of files) {
+            // 生成唯一id后缀
+            const unique = file.id;
             html += `
                 <div class="file-card" data-id="${file.id}">
-                    <div class="file-title" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</div>
-                    <div class="file-meta">
-                        上传者：${escapeHtml(file.uploader)} · ${file.size_human}<br>
-                        ${new Date(file.created_at).toLocaleString()}
-                    </div>
-                    <div class="file-stats">
-                        <span><i class="fas fa-thumbs-up"></i> ${file.likes}</span>
-                        <span><i class="fas fa-star"></i> ${file.collections}</span>
-                    </div>
-                    <div class="file-actions">
+                    <div class="file-info">
+                        <div class="file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</div>
+                        <div class="file-meta">上传者：${escapeHtml(file.uploader)} · ${file.size_human}<br>${new Date(file.created_at).toLocaleString()}</div>
                         <a href="${file.download_url}" class="download-link" target="_blank"><i class="fas fa-download"></i> 下载</a>
-                        ${currentUser ? `
-                            <button class="like-btn" data-id="${file.id}"><i class="fas fa-thumbs-up"></i> 点赞</button>
-                            <button class="collect-btn" data-id="${file.id}"><i class="fas fa-star"></i> 收藏</button>
-                        ` : `
-                            <button class="like-btn" disabled style="opacity:0.5;"><i class="fas fa-thumbs-up"></i> 登录后点赞</button>
-                            <button class="collect-btn" disabled style="opacity:0.5;"><i class="fas fa-star"></i> 登录后收藏</button>
-                        `}
+                    </div>
+                    <div class="like-dislike-container">
+                        <div class="icons-box">
+                            <!-- 点赞组件 -->
+                            <div class="icons">
+                                <label class="btn-label" for="like-checkbox-${unique}">
+                                    <span class="like-text-content" id="like-count-${unique}">${file.likes}</span>
+                                    <input class="input-box" id="like-checkbox-${unique}" type="checkbox" ${currentUser ? '' : 'disabled'}>
+                                    <svg class="svgs" id="icon-like-solid" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M313.4 32.9c26 5.2 42.9 30.5 37.7 56.5l-2.3 11.4c-5.3 26.7-15.1 52.1-28.8 75.2H464c26.5 0 48 21.5 48 48c0 18.5-10.5 34.6-25.9 42.6C497 275.4 504 288.9 504 304c0 23.4-16.8 42.9-38.9 47.1c4.4 7.3 6.9 15.8 6.9 24.9c0 21.3-13.9 39.4-33.1 45.6c.7 3.3 1.1 6.8 1.1 10.4c0 26.5-21.5 48-48 48H294.5c-19 0-37.5-5.6-53.3-16.1l-38.5-25.7C176 420.4 160 390.4 160 358.3V320 272 247.1c0-29.2 13.3-56.7 36-75l7.4-5.9c26.5-21.2 44.6-51 51.2-84.2l2.3-11.4c5.2-26 30.5-42.9 56.5-37.7zM32 192H96c17.7 0 32 14.3 32 32V448c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32V224c0-17.7 14.3-32 32-32z"></path></svg>
+                                    <svg class="svgs" id="icon-like-regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M323.8 34.8c-38.2-10.9-78.1 11.2-89 49.4l-5.7 20c-3.7 13-10.4 25-19.5 35l-51.3 56.4c-8.9 9.8-8.2 25 1.6 33.9s25 8.2 33.9-1.6l51.3-56.4c14.1-15.5 24.4-34 30.1-54.1l5.7-20c3.6-12.7 16.9-20.1 29.7-16.5s20.1 16.9 16.5 29.7l-5.7 20c-5.7 19.9-14.7 38.7-26.6 55.5c-5.2 7.3-5.8 16.9-1.7 24.9s12.3 13 21.3 13L448 224c8.8 0 16 7.2 16 16c0 6.8-4.3 12.7-10.4 15c-7.4 2.8-13 9-14.9 16.7s.1 15.8 5.3 21.7c2.5 2.8 4 6.5 4 10.6c0 7.8-5.6 14.3-13 15.7c-8.2 1.6-15.1 7.3-18 15.1s-1.6 16.7 3.6 23.3c2.1 2.7 3.4 6.1 3.4 9.9c0 6.7-4.2 12.6-10.2 14.9c-11.5 4.5-17.7 16.9-14.4 28.8c.4 1.3 .6 2.8 .6 4.3c0 8.8-7.2 16-16 16H286.5c-12.6 0-25-3.7-35.5-10.7l-61.7-41.1c-11-7.4-25.9-4.4-33.3 6.7s-4.4 25.9 6.7 33.3l61.7 41.1c18.4 12.3 40 18.8 62.1 18.8H384c34.7 0 62.9-27.6 64-62c14.6-11.7 24-29.7 24-50c0-4.5-.5-8.8-1.3-13c15.4-11.7 25.3-30.2 25.3-51c0-6.5-1-12.8-2.8-18.7C504.8 273.7 512 257.7 512 240c0-35.3-28.6-64-64-64l-92.3 0c4.7-10.4 8.7-21.2 11.8-32.2l5.7-20c10.9-38.2-11.2-78.1-49.4-89zM32 192c-17.7 0-32 14.3-32 32V448c0 17.7 14.3 32 32 32H96c17.7 0 32-14.3 32-32V224c0-17.7-14.3-32-32-32H32z"></path></svg>
+                                    <div class="fireworks"><div class="checked-like-fx"></div></div>
+                                </label>
+                            </div>
+                            <!-- 收藏组件（改造自 dislike） -->
+                            <div class="icons">
+                                <label class="btn-label" for="collect-checkbox-${unique}">
+                                    <span class="collect-text-content" id="collect-count-${unique}">${file.collections}</span>
+                                    <input class="input-box" id="collect-checkbox-${unique}" type="checkbox" ${currentUser ? '' : 'disabled'}>
+                                    <svg class="svgs" id="icon-collect-solid" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.8-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+                                    <svg class="svgs" id="icon-collect-regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M287.9 0c9.2 0 17.6 5.2 21.9 13.5l68.4 136.9 152.3 22.1c10.1 1.5 18.4 8.9 21.5 18.5s1.3 19.9-5.6 27.2L412.4 333.1l26 151.5c1.7 9.8-2.4 19.7-10.5 25.9s-18.3 6.4-26.8 2.6L287.9 432.3l-136.2 71.8c-8.5 3.9-18.8 3.2-26.8-2.6s-12.2-16.1-10.5-25.9l26-151.5L29.2 218.1c-6.9-7.3-9.4-17.6-5.6-27.2s11.3-17 21.5-18.5l152.3-22.1 68.4-136.9C270.3 5.2 278.7 0 287.9 0z"/></svg>
+                                    <div class="fireworks"><div class="checked-collect-fx"></div></div>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
         }
         document.getElementById('fileList').innerHTML = html;
 
-        // 绑定点赞/收藏事件（仅当已登录）
-        if (currentUser) {
-            document.querySelectorAll('.like-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    const fileId = btn.getAttribute('data-id');
-                    await likeFile(fileId);
+        // 绑定点赞和收藏事件
+        for (let file of files) {
+            const likeCheck = document.getElementById(`like-checkbox-${file.id}`);
+            const collectCheck = document.getElementById(`collect-checkbox-${file.id}`);
+            if (likeCheck && currentUser) {
+                likeCheck.addEventListener('change', async (e) => {
+                    if (likeCheck.checked) {
+                        const res = await fetch(`/api/community/like/${file.id}`, { method: 'POST' });
+                        const data = await res.json();
+                        if (data.success) {
+                            // 更新显示数量
+                            document.getElementById(`like-count-${file.id}`).innerText = (file.likes + 1);
+                            file.likes += 1;
+                            showToast('点赞成功！');
+                        } else {
+                            showToast(data.error || '点赞失败', true);
+                            likeCheck.checked = false; // 回滚
+                        }
+                    }
                 });
-            });
-            document.querySelectorAll('.collect-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    const fileId = btn.getAttribute('data-id');
-                    await collectFile(fileId);
+            }
+            if (collectCheck && currentUser) {
+                collectCheck.addEventListener('change', async (e) => {
+                    if (collectCheck.checked) {
+                        const res = await fetch(`/api/community/collect/${file.id}`, { method: 'POST' });
+                        const data = await res.json();
+                        if (data.success) {
+                            document.getElementById(`collect-count-${file.id}`).innerText = (file.collections + 1);
+                            file.collections += 1;
+                            showToast('收藏成功！');
+                        } else {
+                            showToast(data.error || '收藏失败', true);
+                            collectCheck.checked = false;
+                        }
+                    }
                 });
-            });
-        }
-    }
-
-    async function likeFile(fileId) {
-        try {
-            const res = await fetch(`/api/community/like/${fileId}`, { method: 'POST' });
-            const data = await res.json();
-            if (data.success) {
-                showToast('点赞成功！');
-                // 刷新列表以更新点赞数
-                loadCommunityFiles();
-            } else {
-                showToast(data.error || '点赞失败', true);
             }
-        } catch (err) {
-            showToast('请求失败', true);
-        }
-    }
-
-    async function collectFile(fileId) {
-        try {
-            const res = await fetch(`/api/community/collect/${fileId}`, { method: 'POST' });
-            const data = await res.json();
-            if (data.success) {
-                showToast('收藏成功！');
-                loadCommunityFiles();
-            } else {
-                showToast(data.error || '收藏失败', true);
-            }
-        } catch (err) {
-            showToast('请求失败', true);
         }
     }
 
@@ -354,7 +494,6 @@
         });
     }
 
-    // 初始化
     async function init() {
         await checkAuth();
         await loadCommunityFiles();

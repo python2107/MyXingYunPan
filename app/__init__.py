@@ -1,5 +1,4 @@
-# app/__init__.py
-from flask import Flask
+from flask import Flask, render_template
 import os
 from config import SECRET_KEY, MAX_CONTENT_LENGTH, PERMANENT_SESSION_LIFETIME, UPLOAD_FOLDER
 from app.models import init_db, close_connection
@@ -12,7 +11,6 @@ def create_app():
     app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
     app.config['PERMANENT_SESSION_LIFETIME'] = PERMANENT_SESSION_LIFETIME
 
-    # 确保上传目录存在
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
     # 注册蓝图
@@ -30,10 +28,16 @@ def create_app():
     app.register_blueprint(social_bp, url_prefix='/api')
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
 
-    # 初始化数据库（传入app）
     init_db(app)
-
-    # 注册数据库连接关闭钩子
     app.teardown_appcontext(close_connection)
+
+    # 自定义错误页面
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('404.html'), 404
+
+    @app.errorhandler(403)
+    def forbidden(e):
+        return render_template('404.html'), 403
 
     return app

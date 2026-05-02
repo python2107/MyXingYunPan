@@ -7,12 +7,10 @@
     <style>
         :root {
             --bg: #0f0f1a;
-            --card-bg: #1a1a2e;
             --text: #e0e0e0;
             --muted: #8888aa;
             --accent: #6c63ff;
             --accent-glow: #a78bfa;
-            --button-hover: #5a52e0;
             --star-color: #ffffff;
         }
 
@@ -135,7 +133,6 @@
             animation: gradientShift 4s ease-in-out infinite;
             filter: drop-shadow(0 0 40px rgba(108, 99, 255, 0.5));
             user-select: none;
-            position: relative;
         }
 
         @keyframes gradientShift {
@@ -154,7 +151,7 @@
             }
         }
 
-        /* ========== 故障效果覆盖层 ========== */
+        /* 故障效果覆盖层 */
         .glitch-wrapper {
             position: relative;
             display: inline-block;
@@ -168,14 +165,17 @@
             left: 0;
             width: 100%;
             height: 100%;
+            background: inherit;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0;
+            pointer-events: none;
             background: linear-gradient(135deg, #6c63ff 0%, #a78bfa 30%, #c4b5fd 50%, #a78bfa 70%, #6c63ff 100%);
             background-size: 200% 200%;
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            animation: gradientShift 4s ease-in-out infinite;
-            opacity: 0;
-            pointer-events: none;
         }
 
         .glitch-wrapper::before {
@@ -222,7 +222,7 @@
             }
         }
 
-        /* ========== 分隔线 ========== */
+        /* 分隔线 */
         .divider {
             width: 60px;
             height: 4px;
@@ -244,7 +244,7 @@
             }
         }
 
-        /* ========== 文字区域 ========== */
+        /* 文字区域 */
         .text-content {
             display: flex;
             flex-direction: column;
@@ -271,7 +271,97 @@
             font-weight: 500;
         }
 
-        /* ========== 按钮组 ========== */
+        /* ========== 渐变按钮样式（用户提供） ========== */
+        .gradient-button {
+            position: relative;
+            padding: 14px 28px;
+            font-size: 15px;
+            font-weight: bold;
+            color: white;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            border-radius: 50px;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            white-space: nowrap;
+            letter-spacing: 0.02em;
+        }
+
+        .gradient-button:hover {
+            transform: scale(1.03);
+        }
+
+        .gradient-button::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg,
+                    #ff6b6b,
+                    #4ecdc4,
+                    #45b7d1,
+                    #96ceb4,
+                    #feca57,
+                    #ff9ff3,
+                    #ff6b6b);
+            z-index: -2;
+            filter: blur(10px);
+            transform: rotate(0deg);
+            transition: transform 1.5s ease-in-out;
+        }
+
+        .gradient-button:hover::before {
+            transform: rotate(180deg);
+        }
+
+        .gradient-button::after {
+            content: "";
+            position: absolute;
+            inset: 3px;
+            background: black;
+            border-radius: 47px;
+            z-index: -1;
+            filter: blur(5px);
+        }
+
+        .gradient-text {
+            color: transparent;
+            background: conic-gradient(from 0deg,
+                    #ff6b6b,
+                    #4ecdc4,
+                    #45b7d1,
+                    #96ceb4,
+                    #feca57,
+                    #ff9ff3,
+                    #ff6b6b);
+            background-clip: text;
+            -webkit-background-clip: text;
+            filter: hue-rotate(0deg);
+            transition: filter 0.3s ease;
+        }
+
+        .gradient-button:hover .gradient-text {
+            animation: hue-rotating 2s linear infinite;
+        }
+
+        .gradient-button:active {
+            transform: scale(0.99);
+        }
+
+        @keyframes hue-rotating {
+            to {
+                filter: hue-rotate(360deg);
+            }
+        }
+
+        /* 按钮组布局 */
         .button-group {
             display: flex;
             flex-wrap: wrap;
@@ -280,69 +370,71 @@
             margin-top: 8px;
         }
 
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 13px 28px;
-            border-radius: 50px;
-            font-size: 15px;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            border: none;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            letter-spacing: 0.01em;
-            position: relative;
-            overflow: hidden;
-            white-space: nowrap;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: #fff;
-            box-shadow: 0 8px 30px rgba(108, 99, 255, 0.35);
-        }
-
-        .btn-primary:hover {
-            background: var(--button-hover);
-            box-shadow: 0 12px 40px rgba(108, 99, 255, 0.55);
-            transform: translateY(-3px);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
-            transition: all 0.1s ease;
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: #d0d0e0;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .btn-outline:hover {
-            border-color: var(--accent-glow);
-            color: #fff;
-            background: rgba(108, 99, 255, 0.08);
-            box-shadow: 0 0 25px rgba(108, 99, 255, 0.2);
-            transform: translateY(-3px);
-        }
-
-        .btn-outline:active {
-            transform: translateY(0);
-            transition: all 0.1s ease;
-        }
-
+        /* 图标样式保持简洁 */
         .btn-icon {
-            display: inline-block;
             width: 18px;
             height: 18px;
             flex-shrink: 0;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            /* 图标颜色继承渐变文字效果？ 可以将图标也用gradient-text包裹或者单独处理。
+               这里图标使用currentColor，随着文字渐变也会变色（但SVG可能无法展示背景裁剪）。
+               为了统一效果，将图标放在.gradient-text内，但SVG的fill/stroke可能不支持background-clip。
+               简单处理：图标同样使用.gradient-text类包裹，并设置fill="none" stroke="currentColor"，
+               这样图标颜色会跟随文字颜色变化（文字透明但显示背景？不行，因为SVG不支持background-clip）。
+               替代方案：为图标应用一个单独的渐变SVG滤镜，或直接使用彩色图标。
+               为了保持简洁，我们让图标颜色也使用相同的渐变文字样式，但通过复制.gradient-text类到svg上，
+               并添加样式支持。但这并不完美。更好的方法：在.gradient-text内部使用SVG时，
+               可以设置fill="url(#gradient)" 但需要内联渐变。为了演示，这里简单处理为白色图标，
+               但在hover时也显示彩色。实际中可以将SVG颜色固定为白色，不影响按钮整体效果。
+               我会给svg直接填充白色，因为文字渐变已经足够吸引注意力。
+            */
+            color: white;
         }
 
-        /* ========== 浮动粒子环 ========== */
+        /* 按钮内文字和图标统一包裹 */
+        .gradient-button .icon-wrapper {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+        }
+
+        .gradient-button .icon-wrapper svg {
+            width: 100%;
+            height: 100%;
+            stroke: white;
+        }
+
+        /* 确保文字可读，即使在渐变背景下 */
+        .gradient-button .text-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 移动端调整 */
+        @media (max-width: 480px) {
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+                max-width: 260px;
+            }
+            .gradient-button {
+                justify-content: center;
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+            .description {
+                max-width: 300px;
+            }
+        }
+
+        /* 漂浮轨道环 */
         .orbit-ring {
             position: absolute;
             border: 1px solid rgba(108, 99, 255, 0.15);
@@ -405,28 +497,12 @@
             }
         }
 
-        /* ========== 响应式 ========== */
         @media (max-width: 480px) {
-            .button-group {
-                flex-direction: column;
-                gap: 10px;
-                width: 100%;
-                max-width: 260px;
-            }
-            .btn {
-                justify-content: center;
-                padding: 12px 20px;
-                font-size: 14px;
-            }
             .orbit-ring {
                 display: none;
             }
-            .description {
-                max-width: 300px;
-            }
         }
 
-        /* ========== 页脚提示 ========== */
         .footer-hint {
             position: fixed;
             bottom: 20px;
@@ -471,28 +547,34 @@
             </p>
         </div>
 
-        <!-- 按钮 -->
+        <!-- 按钮组 - 使用新的渐变按钮样式 -->
         <nav class="button-group" aria-label="导航选项">
-            <a href="/" class="btn btn-primary" aria-label="返回首页">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                    <polyline points="9 22 9 12 15 12 15 22"/>
-                </svg>
-                返回首页
+            <a href="/" class="gradient-button" aria-label="返回首页">
+                <span class="icon-wrapper">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                </span>
+                <span class="gradient-text">返回首页</span>
             </a>
-            <a href="javascript:history.back()" class="btn btn-outline" aria-label="返回上一页">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"/>
-                    <polyline points="12 19 5 12 12 5"/>
-                </svg>
-                后退一步
+            <a href="javascript:history.back()" class="gradient-button" aria-label="返回上一页">
+                <span class="icon-wrapper">
+                    <svg viewBox="0 0 24 24">
+                        <line x1="19" y1="12" x2="5" y2="12"/>
+                        <polyline points="12 19 5 12 12 5"/>
+                    </svg>
+                </span>
+                <span class="gradient-text">后退一步</span>
             </a>
-            <a href="/search" class="btn btn-outline" aria-label="搜索站内内容">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"/>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-                搜索站内
+            <a href="/search" class="gradient-button" aria-label="搜索站内内容">
+                <span class="icon-wrapper">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                </span>
+                <span class="gradient-text">搜索站内</span>
             </a>
         </nav>
     </main>
@@ -502,7 +584,7 @@
 
     <script>
         (function() {
-            // ========== 生成星空 ==========
+            // 生成星空
             const starsContainer = document.getElementById('starsContainer');
             const starCount = 120;
 
@@ -519,7 +601,7 @@
                 starsContainer.appendChild(star);
             }
 
-            // ========== 生成流星 ==========
+            // 生成流星
             const shootingStarCount = 3;
             for (let i = 0; i < shootingStarCount; i++) {
                 const shootingStar = document.createElement('div');
@@ -531,7 +613,7 @@
                 starsContainer.appendChild(shootingStar);
             }
 
-            // ========== 鼠标视差效果（桌面端） ==========
+            // 鼠标视差效果
             const orbitRings = document.querySelectorAll('.orbit-ring');
             let mouseX = 0;
             let mouseY = 0;
@@ -557,7 +639,7 @@
             }
             animateOrbit();
 
-            // ========== 页面加载3秒后给流星更多随机性 ==========
+            // 流星随机重置
             setInterval(() => {
                 const shootingStars = document.querySelectorAll('.shooting-star');
                 shootingStars.forEach(s => {

@@ -43,55 +43,234 @@
         .nav-links a {
             margin-left: 1.5rem;
             text-decoration: none;
-            color: #334155;
             font-weight: 500;
             transition: 0.2s;
         }
-        .nav-links a:hover {
-            color: #3b82f6;
+        /* 下划线悬停按钮样式 (用于普通导航链接) */
+        .nav-link {
+            color: #334155;
+            position: relative;
+            padding-bottom: 4px;
         }
+        .nav-link::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 2px;
+            width: 0;
+            background-color: #ffc506;
+            transition: 0.5s ease;
+        }
+        .nav-link:hover {
+            color: #1e1e2b;
+        }
+        .nav-link:hover::before {
+            width: 100%;
+        }
+
+        /* 按钮通用样式清除 */
+        .btn-outline, .btn-primary, .gradient-button, .arrow-button {
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        /* 样式一：渐变霓虹按钮 (用于主要操作) */
+        .gradient-button {
+            position: relative;
+            padding: 12px 28px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: transparent;
+            border-radius: 50px;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+        .gradient-button:hover {
+            transform: scale(1.03);
+        }
+        .gradient-button::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                from 0deg,
+                #ff6b6b,
+                #4ecdc4,
+                #45b7d1,
+                #96ceb4,
+                #feca57,
+                #ff9ff3,
+                #ff6b6b
+            );
+            z-index: -2;
+            filter: blur(10px);
+            transform: rotate(0deg);
+            transition: transform 1.5s ease-in-out;
+        }
+        .gradient-button:hover::before {
+            transform: rotate(180deg);
+        }
+        .gradient-button::after {
+            content: "";
+            position: absolute;
+            inset: 3px;
+            background: black;
+            border-radius: 47px;
+            z-index: -1;
+            filter: blur(5px);
+        }
+        .gradient-text {
+            color: transparent;
+            background: conic-gradient(
+                from 0deg,
+                #ff6b6b,
+                #4ecdc4,
+                #45b7d1,
+                #96ceb4,
+                #feca57,
+                #ff9ff3,
+                #ff6b6b
+            );
+            background-clip: text;
+            filter: hue-rotate(0deg);
+        }
+        .gradient-button:hover .gradient-text {
+            animation: hue-rotating 2s linear infinite;
+        }
+        @keyframes hue-rotating {
+            to { filter: hue-rotate(360deg); }
+        }
+
+        /* 样式二：带箭头悬浮的按钮 (用于次要操作，如登录) */
+        .arrow-button {
+            --primary-color: #645bff;
+            --secondary-color: #fff;
+            --hover-color: #111;
+            --arrow-width: 10px;
+            --arrow-stroke: 2px;
+            background: var(--primary-color);
+            color: var(--secondary-color);
+            padding: 10px 24px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6em;
+            font-weight: bold;
+        }
+        .arrow-button .arrow-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .arrow-button .arrow {
+            margin-top: 1px;
+            width: var(--arrow-width);
+            background: var(--primary-color);
+            height: var(--arrow-stroke);
+            position: relative;
+            transition: 0.2s;
+        }
+        .arrow-button .arrow::before {
+            content: "";
+            box-sizing: border-box;
+            position: absolute;
+            border: solid var(--secondary-color);
+            border-width: 0 var(--arrow-stroke) var(--arrow-stroke) 0;
+            display: inline-block;
+            top: -3px;
+            right: 3px;
+            transition: 0.2s;
+            padding: 3px;
+            transform: rotate(-45deg);
+        }
+        .arrow-button:hover {
+            background-color: var(--hover-color);
+        }
+        .arrow-button:hover .arrow {
+            background: var(--secondary-color);
+        }
+        .arrow-button:hover .arrow:before {
+            right: 0;
+        }
+
+        /* 保留原 .btn-outline 风格，但改用下划线按钮（导航专用） */
         .btn-outline {
-            border: 1px solid #3b82f6;
-            padding: 0.4rem 1rem;
-            border-radius: 30px;
             background: transparent;
             color: #3b82f6;
+            border: 1px solid #3b82f6;
+            padding: 6px 18px;
+            border-radius: 30px;
+            transition: 0.2s;
         }
         .btn-outline:hover {
             background: #3b82f6;
             color: white;
         }
-        .btn-primary {
-            background: #3b82f6;
+
+        /* 英雄区的按钮使用渐变按钮，但可保留arrow-button备用 */
+        .hero .btn-primary {
+            /* 应用渐变样式 */
+            position: relative;
+            padding: 12px 28px;
+            font-size: 18px;
+            font-weight: bold;
             color: white;
-            border: none;
-            padding: 0.6rem 1.5rem;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            text-decoration: none;
+            background: transparent;
+            border-radius: 50px;
+            overflow: hidden;
+            transition: transform 0.2s ease;
             display: inline-block;
         }
-        .btn-primary:hover {
-            background: #2563eb;
-            transform: translateY(-2px);
+        .hero .btn-primary::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                from 0deg,
+                #ff6b6b,
+                #4ecdc4,
+                #45b7d1,
+                #96ceb4,
+                #feca57,
+                #ff9ff3,
+                #ff6b6b
+            );
+            z-index: -2;
+            filter: blur(10px);
+            transform: rotate(0deg);
+            transition: transform 1.5s ease-in-out;
         }
-        .hero {
-            text-align: center;
-            padding: 4rem 2rem;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        .hero .btn-primary:hover::before {
+            transform: rotate(180deg);
         }
-        .hero h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+        .hero .btn-primary::after {
+            content: "";
+            position: absolute;
+            inset: 3px;
+            background: black;
+            border-radius: 47px;
+            z-index: -1;
+            filter: blur(5px);
         }
-        .hero p {
-            font-size: 1.2rem;
-            color: #475569;
-            max-width: 600px;
-            margin: 0 auto 2rem;
+        .hero .btn-primary {
+            background: transparent;
+            line-height: 1;
         }
+
+        /* 特性卡片区样式保留 */
         .features {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -150,14 +329,14 @@
             <i class="fas fa-cloud-upload-alt"></i> 星云盘
         </div>
         <div class="nav-links">
-            <a href="#features">功能</a>
-            <a href="{{ url_for('pages.community_page') }}">社区</a>
+            <a href="#features" class="nav-link">功能</a>
+            <a href="{{ url_for('pages.community_page') }}" class="nav-link">社区</a>
             {% if session.get('user_id') %}
                 <a href="{{ url_for('pages.user_center') }}" class="btn-outline">个人中心</a>
                 <a href="{{ url_for('pages.logout_page') }}" class="btn-outline">登出</a>
             {% else %}
-                <a href="{{ url_for('pages.login_page') }}" class="btn-outline">登录</a>
-                <a href="{{ url_for('pages.login_page') }}?tab=register" class="btn-primary">免费注册</a>
+                <a href="{{ url_for('pages.login_page') }}" class="arrow-button">登录 <span class="arrow-wrapper"><span class="arrow"></span></span></a>
+                <a href="{{ url_for('pages.login_page') }}?tab=register" class="gradient-button"><span class="gradient-text">免费注册</span></a>
             {% endif %}
         </div>
     </nav>
