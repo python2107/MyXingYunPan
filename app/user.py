@@ -32,7 +32,7 @@ def get_file_info_from_record(record, with_folder=True):
         "share_link": url_for('pages.numfile', num=record["id"])  # 分享链接（即下载链接）
     }
     if with_folder:
-        info["folder_id"] = record.get("folder_id")
+        info["folder_id"] = record["folder_id"] if "folder_id" in record.keys() else None
     return info
 
 def get_folder_info_from_record(record):
