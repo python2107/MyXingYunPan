@@ -51,7 +51,6 @@ MyXingYunPan 是基于 Python Flask 打造的社交云盘项目，支持文件�
 - **管理员功能**：后台入口见导航菜单，可管理所有用户&文件
 
 ## 目录结构
-请将以下内容（text块）直接复制粘贴到文档适当位置：
 
 ```text
 .
@@ -87,7 +86,7 @@ MyXingYunPan 是基于 Python Flask 打造的社交云盘项目，支持文件�
 ├── pathfile.py
 ├── numfile.py
 ├── filepath.py
-└── （你的其余文件，按实际情况补充）
+...
 ```
 
 ## 贡献指南
@@ -95,5 +94,3 @@ MyXingYunPan 是基于 Python Flask 打造的社交云盘项目，支持文件�
 欢迎 Issue、PR 及反馈建议，详见 [GitHub 项目地址](https://github.com/python2107/MyXingYunPan)。
 
 ---
-
-（以下为原 README.md License 内容保留，仅作结尾，不做覆盖）
