@@ -19,43 +19,42 @@
 
             <!-- 登录表单 -->
             <div id="login-form">
-                <form method="POST" action="{{ url_for('auth.login') }}">
+                <div>
                     <div class="form-group">
                         <label class="form-label">用户名</label>
-                        <input type="text" name="username" class="form-input" required>
+                        <input type="text" id="loginUsername" class="form-input">
                     </div>
                     <div class="form-group">
                         <label class="form-label">密码</label>
-                        <input type="password" name="password" class="form-input" required>
+                        <input type="password" id="loginPassword" class="form-input">
                     </div>
-                    {% if error %}
-                    <div style="color:var(--danger); font-size:13px; margin-bottom:12px;">{{ error }}</div>
-                    {% endif %}
-                    <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px;">登录</button>
-                </form>
+                    <div id="loginError" style="color:var(--danger); font-size:13px; margin-bottom:12px; display:none;"></div>
+                    <button class="btn btn-primary btn-block" style="margin-top:8px;" onclick="doLogin()">登录</button>
+                </div>
             </div>
 
             <!-- 注册表单 -->
             <div id="register-form" style="display:none;">
-                <form method="POST" action="{{ url_for('auth.register') }}">
+                <div>
                     <div class="form-group">
                         <label class="form-label">用户名</label>
-                        <input type="text" name="username" class="form-input" required>
+                        <input type="text" id="regUsername" class="form-input">
                     </div>
                     <div class="form-group">
                         <label class="form-label">邮箱</label>
-                        <input type="email" name="email" class="form-input" required>
+                        <input type="email" id="regEmail" class="form-input">
                     </div>
                     <div class="form-group">
                         <label class="form-label">密码</label>
-                        <input type="password" name="password" class="form-input" required>
+                        <input type="password" id="regPassword" class="form-input">
                     </div>
                     <div class="form-group">
                         <label class="form-label">确认密码</label>
-                        <input type="password" name="confirm_password" class="form-input" required>
+                        <input type="password" id="regConfirmPassword" class="form-input">
                     </div>
-                    <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px;">注册</button>
-                </form>
+                    <div id="regError" style="color:var(--danger); font-size:13px; margin-bottom:12px; display:none;"></div>
+                    <button class="btn btn-primary btn-block" style="margin-top:8px;" onclick="doRegister()">注册</button>
+                </div>
             </div>
 
             <div class="auth-footer">
@@ -65,6 +64,50 @@
     </div>
 
     <script>
+        function doLogin() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorEl = document.getElementById('loginError');
+            errorEl.style.display = 'none';
+            fetch('/api/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, password})
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    window.location.href = '/dashboard';
+                } else {
+                    errorEl.textContent = data.message || '登录失败';
+                    errorEl.style.display = 'block';
+                }
+            });
+        }
+        function doRegister() {
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            const errorEl = document.getElementById('regError');
+            errorEl.style.display = 'none';
+            if (password !== confirmPassword) {
+                errorEl.textContent = '两次密码不一致';
+                errorEl.style.display = 'block';
+                return;
+            }
+            fetch('/api/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, email, password})
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    alert('注册成功，请登录');
+                    switchTab('login');
+                } else {
+                    errorEl.textContent = data.message || '注册失败';
+                    errorEl.style.display = 'block';
+                }
+            });
+        }
         function switchTab(tab) {
             const loginForm = document.getElementById('login-form');
             const registerForm = document.getElementById('register-form');
