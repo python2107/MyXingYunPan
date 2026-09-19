@@ -2,458 +2,87 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>个人中心 · 星云盘</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-        }
-        body {
-            background: url("{{ url_for('static', filename='background.png') }}") no-repeat center center fixed;
-            background-size: cover;
-            min-height: 100vh;
-            padding: 2rem 1.5rem;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        /* 头部导航 */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(8px);
-            padding: 1rem 2rem;
-            border-radius: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.6);
-        }
-        .logo a {
-            text-decoration: none;
-            color: inherit;
-        }
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-        .logo i {
-            margin-right: 0.5rem;
-            color: #3b82f6;
-        }
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(4px);
-            padding: 0.5rem 1.2rem;
-            border-radius: 60px;
-        }
-        .btn-outline {
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(203, 213, 225, 0.6);
-            padding: 6px 14px;
-            border-radius: 40px;
-            cursor: pointer;
-            transition: 0.2s;
-            text-decoration: none;
-            color: #1e293b;
-        }
-        .btn-outline:hover {
-            background: rgba(255, 255, 255, 0.9);
-        }
-        .logout-btn {
-            background: rgba(239, 68, 68, 0.9);
-            border: none;
-            color: white;
-            padding: 6px 14px;
-            border-radius: 40px;
-            cursor: pointer;
-        }
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-        .card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(8px);
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-        }
-        .card h3 {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid #3b82f6;
-            padding-left: 0.8rem;
-        }
-        input, button {
-            background: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(203, 213, 225, 0.6);
-            border-radius: 40px;
-            padding: 8px 16px;
-            width: 100%;
-            margin-bottom: 0.8rem;
-            outline: none;
-        }
-        button {
-            background: rgba(59, 130, 246, 0.9);
-            color: white;
-            cursor: pointer;
-            transition: 0.2s;
-            width: auto;
-        }
-        button:hover {
-            background: rgba(37, 99, 235, 0.95);
-        }
-        .danger-btn {
-            background: rgba(239, 68, 68, 0.9);
-        }
-        .danger-btn:hover {
-            background: rgba(220, 38, 38, 0.95);
-        }
-        .friend-item {
-            background: rgba(255, 255, 255, 0.6);
-            border-radius: 1rem;
-            padding: 0.8rem;
-            margin-bottom: 0.8rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .friend-item:hover {
-            background: rgba(255, 255, 255, 0.8);
-            transform: translateX(5px);
-        }
-        .flex-between {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-        }
-        .mt-2 {
-            margin-top: 1rem;
-        }
-        .toast-msg {
-            position: fixed;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(30, 41, 59, 0.9);
-            backdrop-filter: blur(8px);
-            color: white;
-            padding: 10px 24px;
-            border-radius: 60px;
-            font-size: 0.85rem;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.2s;
-            pointer-events: none;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 2rem;
-            padding: 1rem;
-            background: rgba(255,255,255,0.5);
-            border-radius: 1rem;
-        }
-        .footer a {
-            color: #3b82f6;
-            text-decoration: none;
-            margin: 0 0.5rem;
-        }
-        @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            body {
-                padding: 1rem;
-            }
-        }
-    </style>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - 星云盘</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <div class="logo">
-            <a href="/"><i class="fas fa-cloud-upload-alt"></i> 星云盘</a>
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">星云盘</a>
+        <div class="navbar-links">
+            <a href="/dashboard">我的网盘</a>
+            <a href="/community">社区</a>
+            <a href="/friends">好友</a>
+            <a href="/user_center">个人中心</a>
+            <a href="/logout" class="btn btn-outline-light btn-sm">退出</a>
         </div>
-        <div class="user-info">
-            <span><i class="fas fa-user"></i> <span id="usernameDisplay"></span></span>
-            <span><i class="fas fa-coins"></i> <span id="coinBalance">0</span> 星币</span>
-            <a href="/dashboard" class="btn-outline">📁 文件管理</a>
-            <a href="{{ url_for('pages.user_profile', name=session.get('username')) }}" class="btn-outline">我的主页</a>
-            <button id="logoutBtn" class="logout-btn">登出</button>
+    </nav>
+
+    <!-- 个人资料头部 -->
+    <div class="profile-header">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 24px;">
+            <div class="profile-avatar">
+                {{ user.username[0] | upper }}
+            </div>
+            <div class="profile-name">{{ user.username }}</div>
+            <div class="profile-bio">{{ user.bio or '这个人很懒，什么都没写~' }}</div>
         </div>
     </div>
 
-    <div class="dashboard">
-        <!-- 左侧：账户设置 + 星币操作 -->
-        <div>
-            <div class="card">
-                <h3><i class="fas fa-user-edit"></i> 修改资料</h3>
-                <input type="text" id="newUsername" placeholder="新用户名 (3-20位)" value="">
-                <input type="email" id="newEmail" placeholder="新邮箱">
-                <button id="updateProfileBtn">保存修改</button>
-                <div id="profileMsg" style="color: green; margin-top: 0.5rem;"></div>
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 24px;">
+        <!-- 统计卡片 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ file_count or 0 }}</div>
+                <div class="stat-label">文件</div>
             </div>
-
-            <div class="card">
-                <h3><i class="fas fa-key"></i> 修改密码</h3>
-                <input type="password" id="oldPassword" placeholder="原密码">
-                <input type="password" id="newPassword" placeholder="新密码 (至少6位)">
-                <button id="changePwdBtn">修改密码</button>
-                <div id="pwdMsg" style="color: red; margin-top: 0.5rem;"></div>
+            <div class="stat-card">
+                <div class="stat-value">{{ friend_count or 0 }}</div>
+                <div class="stat-label">好友</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ stars or 0 }}</div>
+                <div class="stat-label">星币</div>
+            </div>
+        </div>
 
-            <div class="card">
-                <h3><i class="fas fa-coins"></i> 星币操作</h3>
-                <div class="flex-between">
-                    <button id="signInBtn"><i class="fas fa-calendar-check"></i> 每日签到 (+10)</button>
-                    <div style="display: flex; gap: 8px; width: 60%;">
-                        <input type="number" id="exchangeCoins" placeholder="星币数量" style="width: 60%;">
-                        <button id="exchangeBtn">兑换容量</button>
+        <!-- 个人信息卡片 -->
+        <div class="card" style="margin-bottom: 24px;">
+            <div class="card-header">个人信息</div>
+            <div class="card-body">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                    <div>
+                        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">用户名</div>
+                        <div style="font-weight: 500;">{{ user.username }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">邮箱</div>
+                        <div style="font-weight: 500;">{{ user.email }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">注册时间</div>
+                        <div style="font-weight: 500;">{{ user.created_at[:10] if user.created_at else '未知' }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">存储用量</div>
+                        <div style="font-weight: 500;">{{ used_storage or 0 }} / {{ total_storage or 1024 }} MB</div>
                     </div>
                 </div>
-                <small>1星币 = 0.5MB · 当前容量: <span id="capacityInfo">--</span></small>
-            </div>
-
-            <div class="card">
-                <h3><i class="fas fa-exclamation-triangle"></i> 危险操作</h3>
-                <button id="deleteAccountBtn" class="danger-btn">⚠️ 永久注销账号</button>
-                <div id="deleteMsg" style="color: red; margin-top: 0.5rem;"></div>
             </div>
         </div>
 
-        <!-- 右侧：好友列表 -->
-        <div>
-            <div class="card">
-                <h3><i class="fas fa-users"></i> 我的好友</h3>
-                <div id="friendsList"></div>
-                <div class="mt-2">
-                    <a href="/friends" class="btn-outline" style="display:inline-block; text-align:center; width:100%;">📖 查看全部好友 →</a>
-                </div>
-            </div>
+        <!-- 操作按钮 -->
+        <div style="display: flex; gap: 12px;">
+            <a href="/edit_profile" class="btn btn-outline">编辑资料</a>
+            <a href="/change_password" class="btn btn-outline">修改密码</a>
+            {% if user.is_admin %}
+            <a href="/admin" class="btn btn-outline">管理后台</a>
+            {% endif %}
         </div>
     </div>
 
-    <div class="footer">
-        <a href="/privacy">隐私政策</a> | 
-        <a href="/terms">用户协议</a> | 
-        <a href="/community">社区</a>
-        <p style="margin-top: 0.5rem;">© 2026 星云盘 · 由 Python 2107 维护 · <a href="https://github.com/python2107/MyXingYunPan" target="_blank">Open in GitHub</a></p>
-    </div>
-</div>
-
-<div id="toastMsg" class="toast-msg"></div>
-
-<script>
-    function showToast(msg, isError = false) {
-        const toast = document.getElementById('toastMsg');
-        toast.textContent = msg;
-        toast.style.backgroundColor = isError ? 'rgba(185, 28, 28, 0.9)' : 'rgba(30, 41, 59, 0.9)';
-        toast.style.opacity = '1';
-        setTimeout(() => toast.style.opacity = '0', 2800);
-    }
-
-    async function loadUserInfo() {
-        try {
-            const res = await fetch('/api/user/info');
-            const data = await res.json();
-            if (data.success) {
-                const u = data.user;
-                document.getElementById('usernameDisplay').innerText = u.username;
-                document.getElementById('coinBalance').innerText = u.coins;
-                document.getElementById('capacityInfo').innerText = `${u.capacity_used_mb}MB / ${u.capacity_total_mb}MB`;
-                // 填充当前用户名和邮箱到修改表单的占位符（但不设置值，让用户自行输入）
-                document.getElementById('newUsername').placeholder = `当前: ${u.username}`;
-                document.getElementById('newEmail').placeholder = `当前: ${u.email || '未设置'}`;
-            } else {
-                showToast('加载用户信息失败', true);
-            }
-        } catch (err) {
-            showToast('网络错误', true);
-        }
-    }
-
-    async function refreshCoins() {
-        const res = await fetch('/api/user/coins');
-        const data = await res.json();
-        if (data.success) {
-            document.getElementById('coinBalance').innerText = data.coins;
-        }
-    }
-
-    // 修改资料（用户名/邮箱）
-    document.getElementById('updateProfileBtn').addEventListener('click', async () => {
-        const username = document.getElementById('newUsername').value.trim();
-        const email = document.getElementById('newEmail').value.trim();
-        if (!username && !email) {
-            showToast('请至少填写一项修改内容', true);
-            return;
-        }
-        const payload = {};
-        if (username) payload.username = username;
-        if (email) payload.email = email;
-
-        const res = await fetch('/api/user/update_profile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (data.success) {
-            showToast('资料修改成功');
-            document.getElementById('profileMsg').innerText = '修改成功';
-            setTimeout(() => document.getElementById('profileMsg').innerText = '', 2000);
-            loadUserInfo(); // 刷新用户显示
-            // 如果用户名改变，更新页面上的用户名显示和会话中的用户名
-            if (username) {
-                document.getElementById('usernameDisplay').innerText = username;
-                // 可选：重新加载页面以更新所有链接中的用户名
-                // 但为了简单，提示用户刷新
-                showToast('建议刷新页面以生效', false);
-            }
-        } else {
-            document.getElementById('profileMsg').style.color = 'red';
-            document.getElementById('profileMsg').innerText = data.error;
-        }
-    });
-
-    // 签到
-    document.getElementById('signInBtn').addEventListener('click', async () => {
-        const res = await fetch('/api/user/sign_in', { method: 'POST' });
-        const data = await res.json();
-        if (data.success) {
-            showToast(`签到成功！获得 ${data.gained} 星币`);
-            refreshCoins();
-            loadUserInfo();
-        } else {
-            showToast(data.error || '签到失败', true);
-        }
-    });
-
-    // 兑换容量
-    document.getElementById('exchangeBtn').addEventListener('click', async () => {
-        const coins = parseInt(document.getElementById('exchangeCoins').value);
-        if (isNaN(coins) || coins <= 0) {
-            showToast('请输入正整数的星币数量', true);
-            return;
-        }
-        const res = await fetch('/api/user/exchange_capacity', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ coins })
-        });
-        const data = await res.json();
-        if (data.success) {
-            showToast(`兑换成功！获得 ${data.mb_gained} MB 容量`);
-            refreshCoins();
-            loadUserInfo();
-            document.getElementById('exchangeCoins').value = '';
-        } else {
-            showToast(data.error, true);
-        }
-    });
-
-    // 修改密码
-    document.getElementById('changePwdBtn').addEventListener('click', async () => {
-        const oldPwd = document.getElementById('oldPassword').value;
-        const newPwd = document.getElementById('newPassword').value;
-        if (!oldPwd || !newPwd) {
-            document.getElementById('pwdMsg').innerText = '请填写完整';
-            return;
-        }
-        if (newPwd.length < 6) {
-            document.getElementById('pwdMsg').innerText = '新密码至少6位';
-            return;
-        }
-        const res = await fetch('/api/user/change_password', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ old_password: oldPwd, new_password: newPwd })
-        });
-        const data = await res.json();
-        if (data.success) {
-            document.getElementById('pwdMsg').style.color = 'green';
-            document.getElementById('pwdMsg').innerText = '修改成功';
-            document.getElementById('oldPassword').value = '';
-            document.getElementById('newPassword').value = '';
-            setTimeout(() => document.getElementById('pwdMsg').innerText = '', 2000);
-        } else {
-            document.getElementById('pwdMsg').style.color = 'red';
-            document.getElementById('pwdMsg').innerText = data.error;
-        }
-    });
-
-    // 注销账号
-    document.getElementById('deleteAccountBtn').addEventListener('click', async () => {
-        if (confirm('⚠️ 永久注销账号将删除所有文件、好友、聊天记录，且不可恢复！确定吗？')) {
-            const res = await fetch('/api/user/delete_account', { method: 'POST' });
-            const data = await res.json();
-            if (data.success) {
-                showToast('账号已注销，即将跳转...');
-                setTimeout(() => window.location.href = '/', 1500);
-            } else {
-                document.getElementById('deleteMsg').innerText = data.error;
-            }
-        }
-    });
-
-    // 登出
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-        await fetch('/api/logout', { method: 'POST' });
-        window.location.href = '/';
-    });
-
-    // 加载好友列表（仅显示最近5条）
-    async function loadFriends() {
-        const res = await fetch('/api/friends');
-        const data = await res.json();
-        if (data.success && data.friends.length) {
-            let html = '';
-            for (let f of data.friends.slice(0, 5)) {
-                html += `<div class="friend-item" onclick="window.location.href='/user/${f.username}'">
-                    <span><i class="fas fa-user-circle"></i> ${escapeHtml(f.username)}</span>
-                    <i class="fas fa-chevron-right"></i>
-                </div>`;
-            }
-            document.getElementById('friendsList').innerHTML = html;
-        } else {
-            document.getElementById('friendsList').innerHTML = '<p>暂无好友，去社区添加吧~</p>';
-        }
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    loadUserInfo();
-    loadFriends();
-    setInterval(refreshCoins, 30000);
-</script>
+    <footer class="footer">
+        <p>© 2026 星云盘 · 分享与社交云存储</p>
+    </footer>
 </body>
 </html>
