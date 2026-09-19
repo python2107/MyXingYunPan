@@ -13,7 +13,7 @@
             <div class="auth-subtitle">登录或注册以继续使用</div>
 
             <div class="auth-tabs" style="display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--border-light);">
-                <div class="auth-tab active" style="padding:8px 4px; font-weight:600; color:var(--primary); border-bottom:2px solid var(--accent); cursor:pointer;" onclick="switchTab('login')">登录</div>
+                <div class="auth-tab active" style="padding:8px 4px; font-weight:600; color:var(--blue-900); border-bottom:2px solid var(--blue-600); cursor:pointer;" onclick="switchTab('login')">登录</div>
                 <div class="auth-tab" style="padding:8px 4px; font-weight:600; color:var(--text-secondary); border-bottom:2px solid transparent; cursor:pointer;" onclick="switchTab('register')">注册</div>
             </div>
 
@@ -116,8 +116,8 @@
             if (tab === 'login') {
                 loginForm.style.display = 'block';
                 registerForm.style.display = 'none';
-                tabs[0].style.color = 'var(--primary)';
-                tabs[0].style.borderBottomColor = 'var(--accent)';
+                tabs[0].style.color = 'var(--blue-900)';
+                tabs[0].style.borderBottomColor = 'var(--blue-600)';
                 tabs[1].style.color = 'var(--text-secondary)';
                 tabs[1].style.borderBottomColor = 'transparent';
             } else {
@@ -125,8 +125,8 @@
                 registerForm.style.display = 'block';
                 tabs[0].style.color = 'var(--text-secondary)';
                 tabs[0].style.borderBottomColor = 'transparent';
-                tabs[1].style.color = 'var(--primary)';
-                tabs[1].style.borderBottomColor = 'var(--accent)';
+                tabs[1].style.color = 'var(--blue-900)';
+                tabs[1].style.borderBottomColor = 'var(--blue-600)';
             }
         }
     </script>
