@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>好友对话 · 星云盘</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <style>
+        .chat-layout { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; height: calc(100vh - 120px); }
+        .friend-panel { border: 1px solid var(--border); border-radius: var(--radius); display: flex; flex-direction: column; overflow: hidden; }
+        .friend-panel h3 { padding: 1rem; border-bottom: 1px solid var(--border); font-size: 1rem; }
+        .friend-list { flex: 1; overflow-y: auto; padding: 0.5rem; }
+        .friend-item { display: flex; align-items: center; padding: 0.7rem; border-radius: var(--radius); cursor: pointer; margin-bottom: 0.3rem; }
+        .friend-item:hover { background: var(--surface); }
+        .friend-item.active { background: #e0f7f6; border-left: 3px solid var(--teal); }
+        .friend-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-dark); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; margin-right: 0.7rem; flex-shrink: 0; }
+        .chat-panel { border: 1px solid var(--border); border-radius: var(--radius); display: flex; flex-direction: column; overflow: hidden; }
+        .chat-header { padding: 1rem 1.2rem; border-bottom: 1px solid var(--border); font-weight: 600; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 1.2rem; display: flex; flex-direction: column; gap: 0.8rem; }
+        .msg { max-width: 70%; padding: 0.6rem 0.9rem; border-radius: var(--radius); font-size: 0.95rem; }
+        .msg.sent { align-self: flex-end; background: var(--primary-dark); color: #fff; }
+        .msg.received { align-self: flex-start; background: var(--surface); }
+        .chat-input { display: flex; padding: 1rem; border-top: 1px solid var(--border); gap: 0.6rem; }
+        .chat-input input { flex: 1; }
+        .empty-state { text-align: center; color: var(--muted); padding: 2rem; }
+        @media (max-width: 768px) { .chat-layout { grid-template-columns: 1fr; height: auto; } }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo-row"><i class="fas fa-cloud"></i> <a href="/">星云盘</a></div>
+        <div class="nav-links">
+            <a href="/friends"><i class="fas fa-arrow-left"></i> 好友列表</a>
+            <a href="/user_center">个人中心</a>
+            <a href="/logout">登出</a>
+        </div>
+    </nav>
+    <div class="chat-layout">
+        <div class="friend-panel">
+            <h3>好友列表</h3>
+            <div id="friendList" class="friend-list"><div class="empty-state">加载中...</div></div>
+        </div>
+        <div class="chat-panel">
+            <div class="chat-header" id="chatHeader">选择好友开始对话</div>
+            <div id="chatMessages" class="chat-messages">
+                <div class="empty-state"><i class="fas fa-comments"></i><p>从左侧选择好友开始聊天</p></div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="输入消息..." disabled>
+                <button id="sendBtn" disabled>发送</button>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+</body>
+</html>

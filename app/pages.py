@@ -39,6 +39,12 @@ def dashboard():
         return redirect(url_for('pages.login_page'))
     return render_template('dashboard.html')
 
+@pages_bp.route('/chat')
+def chat_page():
+    if 'user_id' not in session:
+        return redirect(url_for('pages.login_page'))
+    return render_template('chat.html')
+
 @pages_bp.route('/friends')
 def friends_page():
     """单独的好友列表页面"""
