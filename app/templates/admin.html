@@ -228,7 +228,7 @@
         </div>
         <div class="user-info">
             <span><i class="fas fa-user-shield"></i> <span id="adminName"></span></span>
-            <button id="logoutBtn" class="logout-btn">登出</button>
+            <button id="logoutBtn" class="btn btn-outline-light">登出</button>
         </div>
     </div>
 
@@ -375,7 +375,7 @@
                         html += `
                             <div class="file-item">
                                 <span><i class="fas fa-file"></i> ${escapeHtml(f.name)} (${f.size_human})</span>
-                                <a href="${f.download_url}" target="_blank" class="btn-outline" style="padding:2px 8px;">下载</a>
+                                <a href="${f.download_url}" target="_blank" class="btn btn-outline" style="padding:2px 8px;">下载</a>
                             </div>
                         `;
                     }

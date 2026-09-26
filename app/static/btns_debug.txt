@@ -1,0 +1,11 @@
+L217: <a href="/user_center" class="btn-outline"><i class="fas fa-user-cog"></i> 个人中心</a>
+L218: <button id="logoutBtn" class="logout-btn">登出</button>
+L227: <button id="newFolderBtn" style="padding: 4px 12px;" class="btn btn-primary"><i class="fas fa-plus"></i> 新建</button>
+L232: <button id="confirmNewFolder" class="btn btn-primary">创建</button>
+L233: <button id="cancelNewFolder" class="btn btn-primary">取消</button>
+L243: <button id="uploadBtn" class="btn btn-primary"><i class="fas fa-upload"></i> 上传文件</button>
+L302: <button onclick="deleteFolder(${node.id})" class="danger-btn" style="padding:2px 8px;">删除</button>
+L349: <button onclick="togglePublic(${f.id}, ${f.is_public})" class="btn btn-primary">${f.is_public ? '设为私密' : '设为公开'}</button>
+L350: <button onclick="copyShareLink(${f.id})" class="btn btn-primary"><i class="fas fa-share-alt"></i> 分享</button>
+L351: <button onclick="moveFile(${f.id})" class="btn btn-primary"><i class="fas fa-exchange-alt"></i> 移动</button>
+L352: <button onclick="deleteFile(${f.id})" class="danger-btn">删除</button>

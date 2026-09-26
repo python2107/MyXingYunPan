@@ -215,8 +215,8 @@
         </div>
         <div class="user-info">
             <span><i class="fas fa-user"></i> <span id="usernameDisplay"></span></span>
-            <a href="/user_center" class="btn-outline"><i class="fas fa-user-cog"></i> 个人中心</a>
-            <button id="logoutBtn" class="logout-btn">登出</button>
+            <a href="/user_center" class="btn btn-outline"><i class="fas fa-user-cog"></i> 个人中心</a>
+            <button id="logoutBtn" class="btn btn-outline-light">登出</button>
         </div>
     </div>
 
@@ -225,13 +225,13 @@
         <div class="card">
             <div class="flex-between">
                 <h3><i class="fas fa-folder-tree"></i> 文件夹</h3>
-                <button id="newFolderBtn" style="padding: 4px 12px;"><i class="fas fa-plus"></i> 新建</button>
+                <button id="newFolderBtn"  class="btn btn-primary"><i class="fas fa-plus"></i> 新建</button>
             </div>
             <div id="folderTreeContainer" class="folder-tree">加载中...</div>
             <div class="input-group" style="display: none;" id="newFolderInputGroup">
                 <input type="text" id="newFolderName" placeholder="文件夹名称">
-                <button id="confirmNewFolder">创建</button>
-                <button id="cancelNewFolder">取消</button>
+                <button id="confirmNewFolder" class="btn btn-primary">创建</button>
+                <button id="cancelNewFolder" class="btn btn-outline">取消</button>
             </div>
         </div>
 
@@ -241,7 +241,7 @@
                 <h3 id="currentFolderTitle"><i class="fas fa-folder-open"></i> 当前：根目录</h3>
                 <div>
                     <label style="margin-right: 10px;"><input type="checkbox" id="uploadPublicCheckbox"> 公开文件</label>
-                    <button id="uploadBtn"><i class="fas fa-upload"></i> 上传文件</button>
+                    <button id="uploadBtn" class="btn btn-primary"><i class="fas fa-upload"></i> 上传文件</button>
                 </div>
             </div>
             <input type="file" id="fileInput" style="display: none;" multiple>
@@ -300,7 +300,7 @@
                             <i class="fas fa-folder"></i> ${escapeHtml(node.name)}
                         </div>
                         <div class="folder-actions">
-                            <button onclick="deleteFolder(${node.id})" class="danger-btn" style="padding:2px 8px;">删除</button>
+                            <button onclick="deleteFolder(${node.id})" class="btn btn-danger" style="padding:2px 8px;">删除</button>
                         </div>
                     </li>`;
             if (node.children && node.children.length) {
@@ -347,10 +347,10 @@
                         <small>${f.size_human} · ${f.is_public ? '公开' : '私密'} · 👍 ${f.likes} · ⭐ ${f.collections}</small></div>
                     </div>
                     <div class="file-actions">
-                        <button onclick="togglePublic(${f.id}, ${f.is_public})">${f.is_public ? '设为私密' : '设为公开'}</button>
-                        <button onclick="copyShareLink(${f.id})"><i class="fas fa-share-alt"></i> 分享</button>
-                        <button onclick="moveFile(${f.id})"><i class="fas fa-exchange-alt"></i> 移动</button>
-                        <button onclick="deleteFile(${f.id})" class="danger-btn">删除</button>
+                        <button onclick="togglePublic(${f.id}, ${f.is_public})" class="btn btn-primary">${f.is_public ? '设为私密' : '设为公开'}</button>
+                        <button onclick="copyShareLink(${f.id})" class="btn btn-primary"><i class="fas fa-share-alt"></i> 分享</button>
+                        <button onclick="moveFile(${f.id})" class="btn btn-primary"><i class="fas fa-exchange-alt"></i> 移动</button>
+                        <button onclick="deleteFile(${f.id})" class="btn btn-danger">删除</button>
                     </div>
                 </div>
             `;
