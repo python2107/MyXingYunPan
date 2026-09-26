@@ -1,0 +1,48 @@
+=== TEMPLATES ===
+app/templates/404.html
+app/templates/admin.html
+app/templates/chat.html
+app/templates/community.html
+app/templates/dashboard.html
+app/templates/friends.html
+app/templates/index.html
+app/templates/login.html
+app/templates/privacy_policy.html
+app/templates/user_agreement.html
+app/templates/user_center.html
+app/templates/user_profile.html
+
+=== NAV/HEADER in each ===
+--- app/templates/404.html ---
+L551: <nav class="button-group" aria-label="导航选项">
+--- app/templates/admin.html ---
+L224: <div class="header">
+--- app/templates/chat.html ---
+L30: <nav>
+L32: <div class="nav-links">
+--- app/templates/community.html ---
+L9: <nav class="navbar">
+L10: <a href="/" class="navbar-brand">星云盘</a>
+L11: <div class="navbar-links">
+--- app/templates/dashboard.html ---
+L210: <div class="header">
+--- app/templates/friends.html ---
+L285: <div class="header">
+--- app/templates/index.html ---
+L9: <nav class="navbar">
+L10: <a href="/" class="navbar-brand">星云盘</a>
+L11: <div class="navbar-links">
+--- app/templates/privacy_policy.html ---
+L513: <header class="header-card">
+--- app/templates/user_agreement.html ---
+L562: <header class="header-card">
+--- app/templates/user_center.html ---
+L9: <nav class="navbar">
+L10: <a href="/" class="navbar-brand">星云盘</a>
+L11: <div class="navbar-links">
+--- app/templates/user_profile.html ---
+L9: <nav class="navbar">
+L10: <a href="/" class="navbar-brand">星云盘</a>
+L11: <div class="navbar-links">
+
+=== ROUTES in pages.py ===

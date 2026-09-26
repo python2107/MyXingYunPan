@@ -30,7 +30,10 @@ def user_center():
     """账户设置 + 星币 + 好友列表入口"""
     if 'user_id' not in session:
         return redirect(url_for('pages.login_page'))
-    return render_template('user_center.html')
+    db = get_db()
+    row = db.execute('SELECT id, username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+    user = {'id': row['id'], 'username': row['username'], 'bio': ''}
+    return render_template('user_center.html', user=user)
 
 @pages_bp.route('/dashboard')
 def dashboard():

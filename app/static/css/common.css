@@ -1,21 +1,21 @@
 /* ===== 星云盘 极简蓝白黑设计系统 ===== */
 :root {
-  --blue-900: #0f172a;
-  --blue-800: #1e3a5f;
-  --blue-700: #1d4ed8;
-  --blue-600: #2563eb;
-  --blue-500: #3b82f6;
-  --blue-50: #eff6ff;
-  --gray-900: #111827;
-  --gray-700: #374151;
-  --gray-500: #6b7280;
-  --gray-300: #d1d5db;
-  --gray-100: #f3f4f6;
-  --white: #ffffff;
+  --blue-900: #14141E;
+  --blue-800: #14141E;
+  --blue-700: #8BADFD;
+  --blue-600: #8BADFD;
+  --blue-500: #8BADFD;
+  --blue-50: #F0F0F5;
+  --gray-900: #14141E;
+  --gray-700: #14141E;
+  --gray-500: #C2C2C2;
+  --gray-300: #C2C2C2;
+  --gray-100: #F0F0F5;
+  --white: #F0F0F5;
   /* 中等圆角：按钮/输入框/卡片统一 */
   --radius: 10px;
-  --shadow: 0 1px 3px rgba(0,0,0,0.08);
-  --shadow-lg: 0 4px 16px rgba(0,0,0,0.1);
+  --shadow: 0 1px 3px rgba(20,20,30,0.08);
+  --shadow-lg: 0 4px 16px rgba(20,20,30,0.1);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -47,7 +47,7 @@ a:hover { text-decoration: underline; }
 .navbar-brand { font-size: 18px; font-weight: 700; color: var(--white); letter-spacing: -0.02em; }
 .navbar-brand:hover { color: var(--white); text-decoration: none; }
 .navbar-links { display: flex; gap: 24px; align-items: center; }
-.navbar-links a { color: rgba(255,255,255,0.75); font-size: 14px; transition: color 0.15s; }
+.navbar-links a { color: rgba(240,240,245,0.75); font-size: 14px; transition: color 0.15s; }
 .navbar-links a:hover { color: var(--white); text-decoration: none; }
 
 /* ===== 按钮/输入框统一基础 ===== */
@@ -77,8 +77,8 @@ a:hover { text-decoration: underline; }
 .btn-primary:hover { background: var(--blue-700); }
 .btn-outline { background: var(--white); color: var(--gray-700); border-color: var(--gray-300); }
 .btn-outline:hover { background: var(--gray-100); }
-.btn-outline-light { background: transparent; color: var(--white); border-color: rgba(255,255,255,0.35); }
-.btn-outline-light:hover { background: rgba(255,255,255,0.12); border-color: var(--white); }
+.btn-outline-light { background: transparent; color: var(--white); border-color: rgba(240,240,245,0.35); }
+.btn-outline-light:hover { background: rgba(240,240,245,0.12); border-color: var(--white); }
 .btn-sm { padding: 8px 16px; font-size: 14px; min-height: 36px; }
 .btn-block { width: 100%; }
 
@@ -109,7 +109,7 @@ a:hover { text-decoration: underline; }
 .form-input:focus, .form-select:focus, .form-textarea:focus {
   outline: none;
   border-color: var(--blue-500);
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.18);
+  box-shadow: 0 0 0 3px rgba(139,173,253,0.18);
 }
 .form-textarea { min-height: 100px; resize: vertical; }
 
@@ -172,7 +172,7 @@ a:hover { text-decoration: underline; }
   margin: 0 auto 16px;
 }
 .profile-name { text-align: center; color: var(--white); font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-.profile-bio { text-align: center; color: rgba(255,255,255,0.7); font-size: 14px; }
+.profile-bio { text-align: center; color: rgba(240,240,245,0.7); font-size: 14px; }
 .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
 .stat-card {
   background: var(--white);
