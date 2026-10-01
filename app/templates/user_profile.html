@@ -7,16 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
 </head>
 <body>
-    <nav class="navbar">
-        <a href="/" class="navbar-brand">星云盘</a>
-        <div class="navbar-links">
-            <a href="/dashboard">我的网盘</a>
-            <a href="/community">社区</a>
-            <a href="/friends">好友</a>
-            <a href="/user_center">个人中心</a>
-            <a href="/logout" class="btn btn-outline-light btn-sm">退出</a>
-        </div>
-    </nav>
+    {% include '_nav.html' %}
 
     <!-- 用户主页头部 -->
     <div class="profile-header">

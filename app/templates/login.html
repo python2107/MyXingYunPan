@@ -5,56 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录 - 星云盘</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <style>
+        .auth-tabs { display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+        .auth-tab { padding: 8px 4px; font-weight: 600; color: var(--text-2); border-bottom: 2px solid transparent; cursor: pointer; font-size: 15px; }
+        .auth-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .error-msg { color: #ff6b6b; font-size: 13px; margin-bottom: 12px; display: none; }
+    </style>
 </head>
 <body>
+    {% include '_nav.html' %}
     <div class="auth-page">
         <div class="auth-box">
             <div class="auth-title">星云盘</div>
             <div class="auth-subtitle">登录或注册以继续使用</div>
 
-            <div class="auth-tabs" style="display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--border-light);">
-                <div class="auth-tab active" style="padding:8px 4px; font-weight:600; color:var(--blue-900); border-bottom:2px solid var(--blue-600); cursor:pointer;" onclick="switchTab('login')">登录</div>
-                <div class="auth-tab" style="padding:8px 4px; font-weight:600; color:var(--text-secondary); border-bottom:2px solid transparent; cursor:pointer;" onclick="switchTab('register')">注册</div>
+            <div class="auth-tabs">
+                <div class="auth-tab active" onclick="switchTab('login')">登录</div>
+                <div class="auth-tab" onclick="switchTab('register')">注册</div>
             </div>
 
             <!-- 登录表单 -->
             <div id="login-form">
-                <div>
-                    <div class="form-group">
-                        <label class="form-label">用户名</label>
-                        <input type="text" id="loginUsername" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">密码</label>
-                        <input type="password" id="loginPassword" class="form-input">
-                    </div>
-                    <div id="loginError" style="color:var(--danger); font-size:13px; margin-bottom:12px; display:none;"></div>
-                    <button class="btn btn-primary btn-block" style="margin-top:8px;" onclick="doLogin()">登录</button>
+                <div class="form-group">
+                    <label class="form-label">用户名</label>
+                    <input type="text" id="loginUsername" class="form-input" placeholder="请输入用户名">
                 </div>
+                <div class="form-group">
+                    <label class="form-label">密码</label>
+                    <input type="password" id="loginPassword" class="form-input" placeholder="请输入密码" onkeypress="if(event.key==='Enter')doLogin()">
+                </div>
+                <div id="loginError" class="error-msg"></div>
+                <button class="btn btn-primary btn-block" onclick="doLogin()">登录</button>
             </div>
 
             <!-- 注册表单 -->
             <div id="register-form" style="display:none;">
-                <div>
-                    <div class="form-group">
-                        <label class="form-label">用户名</label>
-                        <input type="text" id="regUsername" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">邮箱</label>
-                        <input type="email" id="regEmail" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">密码</label>
-                        <input type="password" id="regPassword" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">确认密码</label>
-                        <input type="password" id="regConfirmPassword" class="form-input">
-                    </div>
-                    <div id="regError" style="color:var(--danger); font-size:13px; margin-bottom:12px; display:none;"></div>
-                    <button class="btn btn-primary btn-block" style="margin-top:8px;" onclick="doRegister()">注册</button>
+                <div class="form-group">
+                    <label class="form-label">用户名</label>
+                    <input type="text" id="regUsername" class="form-input" placeholder="请输入用户名">
                 </div>
+                <div class="form-group">
+                    <label class="form-label">邮箱</label>
+                    <input type="email" id="regEmail" class="form-input" placeholder="请输入邮箱">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">密码</label>
+                    <input type="password" id="regPassword" class="form-input" placeholder="请输入密码">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">确认密码</label>
+                    <input type="password" id="regConfirmPassword" class="form-input" placeholder="请再次输入密码">
+                </div>
+                <div id="regError" class="error-msg"></div>
+                <button class="btn btn-primary btn-block" onclick="doRegister()">注册</button>
             </div>
 
             <div class="auth-footer">
@@ -63,72 +66,84 @@
         </div>
     </div>
 
-    <script>
-        function doLogin() {
-            const username = document.getElementById('loginUsername').value;
-            const password = document.getElementById('loginPassword').value;
-            const errorEl = document.getElementById('loginError');
-            errorEl.style.display = 'none';
-            fetch('/api/login', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({account: username, password})
-            }).then(r => r.json()).then(data => {
-                if (data.success) {
-                    window.location.href = '/dashboard';
-                } else {
-                    errorEl.textContent = data.message || '登录失败';
-                    errorEl.style.display = 'block';
-                }
-            });
+<script>
+function doLogin() {
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+    const errorEl = document.getElementById('loginError');
+    errorEl.style.display = 'none';
+    if (!username || !password) {
+        errorEl.textContent = '请输入用户名和密码';
+        errorEl.style.display = 'block';
+        return;
+    }
+    fetch('/api/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({account: username, password})
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            window.location.href = '/dashboard';
+        } else {
+            errorEl.textContent = data.message || '登录失败';
+            errorEl.style.display = 'block';
         }
-        function doRegister() {
-            const username = document.getElementById('regUsername').value;
-            const email = document.getElementById('regEmail').value;
-            const password = document.getElementById('regPassword').value;
-            const confirmPassword = document.getElementById('regConfirmPassword').value;
-            const errorEl = document.getElementById('regError');
-            errorEl.style.display = 'none';
-            if (password !== confirmPassword) {
-                errorEl.textContent = '两次密码不一致';
-                errorEl.style.display = 'block';
-                return;
-            }
-            fetch('/api/register', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username, email, password})
-            }).then(r => r.json()).then(data => {
-                if (data.success) {
-                    alert('注册成功，请登录');
-                    switchTab('login');
-                } else {
-                    errorEl.textContent = data.message || '注册失败';
-                    errorEl.style.display = 'block';
-                }
-            });
+    }).catch(() => {
+        errorEl.textContent = '网络错误，请重试';
+        errorEl.style.display = 'block';
+    });
+}
+function doRegister() {
+    const username = document.getElementById('regUsername').value;
+    const email = document.getElementById('regEmail').value;
+    const password = document.getElementById('regPassword').value;
+    const confirmPassword = document.getElementById('regConfirmPassword').value;
+    const errorEl = document.getElementById('regError');
+    errorEl.style.display = 'none';
+    if (!username || !email || !password) {
+        errorEl.textContent = '请填写所有字段';
+        errorEl.style.display = 'block';
+        return;
+    }
+    if (password !== confirmPassword) {
+        errorEl.textContent = '两次密码不一致';
+        errorEl.style.display = 'block';
+        return;
+    }
+    fetch('/api/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username, email, password})
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            alert('注册成功，请登录');
+            switchTab('login');
+            document.getElementById('loginUsername').value = username;
+        } else {
+            errorEl.textContent = data.message || '注册失败';
+            errorEl.style.display = 'block';
         }
-        function switchTab(tab) {
-            const loginForm = document.getElementById('login-form');
-            const registerForm = document.getElementById('register-form');
-            const tabs = document.querySelectorAll('.auth-tab');
-            
-            if (tab === 'login') {
-                loginForm.style.display = 'block';
-                registerForm.style.display = 'none';
-                tabs[0].style.color = 'var(--blue-900)';
-                tabs[0].style.borderBottomColor = 'var(--blue-600)';
-                tabs[1].style.color = 'var(--text-secondary)';
-                tabs[1].style.borderBottomColor = 'transparent';
-            } else {
-                loginForm.style.display = 'none';
-                registerForm.style.display = 'block';
-                tabs[0].style.color = 'var(--text-secondary)';
-                tabs[0].style.borderBottomColor = 'transparent';
-                tabs[1].style.color = 'var(--blue-900)';
-                tabs[1].style.borderBottomColor = 'var(--blue-600)';
-            }
-        }
-    </script>
+    }).catch(() => {
+        errorEl.textContent = '网络错误，请重试';
+        errorEl.style.display = 'block';
+    });
+}
+function switchTab(tab) {
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const tabs = document.querySelectorAll('.auth-tab');
+    if (tab === 'login') {
+        loginForm.style.display = 'block';
+        registerForm.style.display = 'none';
+        tabs[0].classList.add('active');
+        tabs[1].classList.remove('active');
+    } else {
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'block';
+        tabs[0].classList.remove('active');
+        tabs[1].classList.add('active');
+    }
+}
+</script>
 </body>
 </html>

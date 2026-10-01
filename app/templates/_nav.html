@@ -1,0 +1,16 @@
+<nav class="navbar">
+  <a href="/" class="navbar-brand">星云盘</a>
+  <div class="navbar-links">
+    <a href="/">首页</a>
+    <a href="/dashboard">文件管理</a>
+    <a href="/community">社区</a>
+    <a href="/friends">好友</a>
+    <a href="/chat">对话</a>
+    <a href="/user_center">个人中心</a>
+    {% if session.get('user_id') %}
+    <a href="/logout" class="btn btn-outline-light btn-sm" style="margin-left:8px;min-height:32px;padding:4px 14px;">登出</a>
+    {% else %}
+    <a href="/login" class="btn btn-outline-light btn-sm" style="margin-left:8px;min-height:32px;padding:4px 14px;">登录</a>
+    {% endif %}
+  </div>
+</nav>
