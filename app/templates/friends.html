@@ -5,14 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>好友 · 星云盘</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
 </head>
 <body>
-<div class="container">
     {% include '_nav.html' %}
 
-<div id="toastMsg" class="toast-msg"></div>
+<div class="container">
+    <div id="toastMsg" class="toast-msg"></div>
+
+    <div class="friends-layout">
+        <!-- 左侧：好友列表 -->
+        <div class="friends-panel">
+            <h2 class="panel-title"><i class="fas fa-users"></i> 我的好友</h2>
+            <div id="friendsListContainer" class="friends-list">
+                <div class="empty-text">加载中...</div>
+            </div>
+
+            <h2 class="panel-title" style="margin-top:24px;"><i class="fas fa-user-clock"></i> 好友请求</h2>
+            <div id="pendingRequestsContainer" class="friends-list">
+                <div class="empty-text">加载中...</div>
+            </div>
+        </div>
+
+        <!-- 右侧：搜索用户 -->
+        <div class="friends-panel">
+            <h2 class="panel-title"><i class="fas fa-search"></i> 添加好友</h2>
+            <div class="search-box">
+                <input type="text" id="searchInput" class="input" placeholder="输入用户名搜索...">
+                <button id="searchBtn" class="btn btn-primary">搜索</button>
+            </div>
+            <div id="searchResultsContainer" class="friends-list" style="margin-top:16px;">
+                <div class="empty-text">输入用户名搜索用户</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 聊天模态框 -->
+<div id="chatModal" class="chat-modal" style="display:none;">
+    <div class="chat-modal-content">
+        <div class="chat-modal-header">
+            <span id="chatModalTitle">聊天</span>
+            <button id="closeChatModal" class="btn btn-outline" style="padding:4px 12px;font-size:14px;">关闭</button>
+        </div>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-modal-input">
+            <input type="text" id="chatInput" class="input" placeholder="输入消息...">
+            <button id="sendMsgBtn" class="btn btn-primary">发送</button>
+        </div>
+    </div>
+</div>
 
 <script>
     let currentChatFriendId = null;
@@ -106,137 +148,148 @@
         }
         container.innerHTML = html;
         document.querySelectorAll('.accept-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                e.stopPropagation();
+            btn.addEventListener('click', async () => {
                 const requestId = btn.getAttribute('data-request-id');
-                await acceptRequest(requestId);
+                try {
+                    const res = await fetch('/api/friends/accept', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({request_id: requestId})
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast('已接受好友请求');
+                        loadFriends();
+                    } else {
+                        showToast(data.error, true);
+                    }
+                } catch (err) {
+                    showToast('操作失败', true);
+                }
             });
         });
     }
 
-    async function acceptRequest(requestId) {
+    // 搜索用户
+    document.getElementById('searchBtn').addEventListener('click', searchUsers);
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') searchUsers();
+    });
+
+    async function searchUsers() {
+        const query = document.getElementById('searchInput').value.trim();
+        if (!query) {
+            showToast('请输入用户名');
+            return;
+        }
         try {
-            const res = await fetch('/api/friends/accept', {
+            const res = await fetch(`/api/users/search?query=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            const container = document.getElementById('searchResultsContainer');
+            if (data.success && data.users.length) {
+                let html = '';
+                for (let u of data.users) {
+                    html += `
+                        <div class="search-result-item">
+                            <span><i class="fas fa-user"></i> ${escapeHtml(u.username)}</span>
+                            <button class="add-friend-btn" data-id="${u.id}" data-name="${escapeHtml(u.username)}">添加好友</button>
+                        </div>
+                    `;
+                }
+                container.innerHTML = html;
+                document.querySelectorAll('.add-friend-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const userId = btn.getAttribute('data-id');
+                        try {
+                            const res = await fetch('/api/friends/request', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({to_user_id: userId})
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                                showToast('好友请求已发送');
+                            } else {
+                                showToast(data.error, true);
+                            }
+                        } catch (err) {
+                            showToast('发送失败', true);
+                        }
+                    });
+                });
+            } else {
+                container.innerHTML = '<div class="empty-text">未找到用户</div>';
+            }
+        } catch (err) {
+            showToast('搜索失败', true);
+        }
+    }
+
+    // 打开聊天
+    function openChat(friendId, friendName) {
+        currentChatFriendId = friendId;
+        currentChatFriendName = friendName;
+        document.getElementById('chatModalTitle').textContent = `与 ${friendName} 聊天`;
+        document.getElementById('chatModal').style.display = 'flex';
+        loadMessages();
+        if (messagePollInterval) clearInterval(messagePollInterval);
+        messagePollInterval = setInterval(loadMessages, 3000);
+    }
+
+    async function loadMessages() {
+        if (!currentChatFriendId) return;
+        try {
+            const res = await fetch(`/api/messages?friend_id=${currentChatFriendId}`);
+            const data = await res.json();
+            const container = document.getElementById('chatMessages');
+            if (data.success) {
+                let html = '';
+                for (let msg of data.messages) {
+                    const isSent = msg.sender_id === currentUserId;
+                    html += `<div class="message ${isSent ? 'message-sent' : 'message-received'}">
+                        <div class="message-bubble">${escapeHtml(msg.content)}</div>
+                     </div>`;
+                }
+                container.innerHTML = html;
+                container.scrollTop = container.scrollHeight;
+            }
+        } catch (err) {}
+    }
+
+    document.getElementById('sendMsgBtn').addEventListener('click', sendMessage);
+    document.getElementById('chatInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    async function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const content = input.value.trim();
+        if (!content || !currentChatFriendId) return;
+        try {
+            const res = await fetch('/api/messages/send', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ request_id: requestId })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({friend_id: currentChatFriendId, content: content})
             });
             const data = await res.json();
             if (data.success) {
-                showToast('已添加好友');
-                loadFriends();
+                input.value = '';
+                loadMessages();
             } else {
                 showToast(data.error, true);
             }
         } catch (err) {
-            showToast('接受请求失败', true);
+            showToast('发送失败', true);
         }
     }
 
-    // 搜索用户并添加好友
-    document.getElementById('searchUserBtn').addEventListener('click', async () => {
-        const query = document.getElementById('searchUserInput').value.trim();
-        if (query.length < 2) return;
-        const res = await fetch(`/api/friends/search?q=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        const container = document.getElementById('searchResults');
-        if (data.success && data.users.length) {
-            let html = '';
-            for (let u of data.users) {
-                html += `
-                    <div class="search-result-item">
-                        <span><i class="fas fa-user"></i> ${escapeHtml(u.username)}</span>
-                        <button class="add-friend-btn" data-id="${u.id}" data-name="${escapeHtml(u.username)}">添加好友</button>
-                    </div>
-                `;
-            }
-            container.innerHTML = html;
-            // 绑定添加好友按钮
-            document.querySelectorAll('.add-friend-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const toUserId = btn.getAttribute('data-id');
-                    const toName = btn.getAttribute('data-name');
-                    const res = await fetch('/api/friends/request', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ to_user_id: toUserId })
-                    });
-                    const data = await res.json();
-                    if (data.success) {
-                        showToast(`好友请求已发送给 ${toName}`);
-                        btn.disabled = true;
-                        btn.innerText = '已发送';
-                    } else {
-                        showToast(data.error, true);
-                    }
-                });
-            });
-        } else {
-            container.innerHTML = '<div class="empty-text">未找到用户</div>';
-        }
-    });
-
-    // 打开聊天模态框
-    function openChat(friendId, friendName) {
-        currentChatFriendId = friendId;
-        currentChatFriendName = friendName;
-        document.getElementById('chatFriendName').innerText = `与 ${friendName} 聊天`;
-        document.getElementById('chatModal').style.display = 'flex';
-        loadChatMessages();
-        if (messagePollInterval) clearInterval(messagePollInterval);
-        messagePollInterval = setInterval(loadChatMessages, 3000);
-    }
-
-    async function loadChatMessages() {
-        if (!currentChatFriendId) return;
-        const res = await fetch(`/api/messages?friend_id=${currentChatFriendId}`);
-        const data = await res.json();
-        if (data.success) {
-            const container = document.getElementById('chatMessages');
-            let html = '';
-            for (let msg of data.messages) {
-                const isSent = msg.sender_id === currentUserId;
-                html += `<div class="message ${isSent ? 'message-sent' : 'message-received'}">
-                            ${escapeHtml(msg.content)}<br>
-                            <small style="font-size:0.7rem;">${new Date(msg.time).toLocaleTimeString()}</small>
-                         </div>`;
-            }
-            container.innerHTML = html;
-            container.scrollTop = container.scrollHeight;
-        }
-    }
-
-    async function sendMessage() {
-        if (!currentChatFriendId) {
-            showToast('请先选择好友', true);
-            return;
-        }
-        const content = document.getElementById('messageInput').value.trim();
-        if (!content) return;
-        const res = await fetch('/api/messages/send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ receiver_id: currentChatFriendId, content })
-        });
-        const data = await res.json();
-        if (data.success) {
-            document.getElementById('messageInput').value = '';
-            loadChatMessages();
-        } else {
-            showToast(data.error, true);
-        }
-    }
-
-    document.getElementById('sendMsgBtn').addEventListener('click', sendMessage);
-    document.getElementById('messageInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendMessage();
-    });
-    document.getElementById('closeChatBtn').addEventListener('click', () => {
+    document.getElementById('closeChatModal').addEventListener('click', () => {
         document.getElementById('chatModal').style.display = 'none';
         if (messagePollInterval) clearInterval(messagePollInterval);
         currentChatFriendId = null;
     });
-    window.addEventListener('click', (e) => {
+
+    document.getElementById('chatModal').addEventListener('click', (e) => {
         if (e.target === document.getElementById('chatModal')) {
             document.getElementById('chatModal').style.display = 'none';
             if (messagePollInterval) clearInterval(messagePollInterval);
