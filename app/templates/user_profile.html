@@ -59,7 +59,7 @@
                         </div>
                     </div>
                     <div style="font-size: 12px; color: var(--text-secondary);">
-                        ⭐ {{ file.likes or 0 }} · {{ file.upload_time[:10] if file.upload_time else '' }}
+                         {{ file.likes or 0 }} · {{ file.upload_time[:10] if file.upload_time else '' }}
                     </div>
                 </div>
                 {% endfor %}

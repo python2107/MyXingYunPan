@@ -32,9 +32,9 @@
                 </div>
                 <div class="repo-desc">{{ file.description or '暂无描述' }}</div>
                 <div class="repo-meta">
-                    <span>👤 {{ file.owner.username if file.owner else '匿名' }}</span>
-                    <span>📁 {{ file.size // 1024 if file.size else 0 }} KB</span>
-                    <span>⭐ {{ file.likes or 0 }} 点赞</span>
+                    <span> {{ file.owner.username if file.owner else '匿名' }}</span>
+                    <span> {{ file.size // 1024 if file.size else 0 }} KB</span>
+                    <span> {{ file.likes or 0 }} 点赞</span>
                     <span>👁️ {{ file.views or 0 }} 浏览</span>
                 </div>
             </div>
@@ -43,7 +43,7 @@
 
         {% if not files %}
         <div style="text-align: center; padding: 60px 20px; color: var(--text-2);">
-            <div style="font-size: 48px; margin-bottom: 16px;">📂</div>
+            <div style="font-size: 48px; margin-bottom: 16px;"></div>
             <p>暂无公开文件</p>
         </div>
         {% endif %}

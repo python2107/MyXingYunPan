@@ -170,7 +170,7 @@
                     <div class="file-icon"><i class="fas ${icon}"></i></div>
                     <div class="file-info">
                         <strong>${escapeHtml(f.name)}</strong><br>
-                        <small>${f.size_human || ''} · ${f.is_public ? '公开' : '私密'} · 👍 ${f.likes || 0} · ⭐ ${f.collections || 0}</small>
+                        <small>${f.size_human || ''} · ${f.is_public ? '公开' : '私密'} ·  ${f.likes || 0} ·  ${f.collections || 0}</small>
                     </div>
                     <div class="file-actions">
                         <button onclick="togglePublic(${f.id}, ${f.is_public})" class="btn btn-primary btn-sm">${f.is_public ? '设为私密' : '设为公开'}</button>
