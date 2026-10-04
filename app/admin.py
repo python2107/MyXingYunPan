@@ -133,3 +133,48 @@ def admin_adjust_coins(user_id):
         return jsonify({'success': False, 'error': '调整后星币不能为负数'}), 400
     new_balance = db.execute('SELECT coins FROM users WHERE id = ?', (user_id,)).fetchone()['coins']
     return jsonify({'success': True, 'new_balance': new_balance})
+
+# ==================== 主页大标题设置 ====================
+@admin_bp.route('/settings', methods=['GET'])
+@admin_required
+def admin_get_settings():
+    db = get_db()
+    row = db.execute("SELECT value FROM settings WHERE key = 'site_title'").fetchone()
+    return jsonify({'success': True, 'site_title': row['value'] if row else ''})
+
+@admin_bp.route('/settings', methods=['POST'])
+@admin_required
+def admin_set_settings():
+    data = request.get_json()
+    site_title = (data.get('site_title') or '').strip()
+    if not site_title:
+        return jsonify({'success': False, 'error': '标题不能为空'}), 400
+    if len(site_title) > 100:
+        return jsonify({'success': False, 'error': '标题过长（最多100字符）'}), 400
+    # 支持 \n 换行渲染为 <br>
+    site_title = site_title.replace('\n', '<br>')
+    db = get_db()
+    db.execute("INSERT INTO settings (key, value) VALUES ('site_title', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", (site_title,))
+    db.commit()
+    return jsonify({'success': True, 'site_title': site_title})
+
+# ==================== 查看注册验证码 ====================
+@admin_bp.route('/verification_codes', methods=['GET'])
+@admin_required
+def admin_verification_codes():
+    db = get_db()
+    limit = min(max(request.args.get('limit', 50, type=int), 1), 200)
+    rows = db.execute("""
+        SELECT id, email, code, used, created_at
+        FROM email_verification_codes
+        ORDER BY id DESC
+        LIMIT ?
+    """, (limit,)).fetchall()
+    codes = [{
+        'id': r['id'],
+        'email': r['email'],
+        'code': r['code'],
+        'used': bool(r['used']),
+        'created_at': r['created_at']
+    } for r in rows]
+    return jsonify({'success': True, 'codes': codes})

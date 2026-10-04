@@ -65,6 +65,15 @@ def init_db(app):
             )
         """)
 
+        # 站点设置表（key-value，用于主页大标题等可配置项）
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS settings (
+                key TEXT PRIMARY KEY,
+                value TEXT
+            )
+        """)
+        cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('site_title', '你的私有云盘<br>分享与社交')")
+
         # 文件表
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS files (

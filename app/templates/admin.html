@@ -18,6 +18,14 @@
         <p>欢迎，<span id="adminName">加载中...</span></p>
     </div>
 
+    <div class="admin-tabs" style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+        <button class="btn btn-primary admin-tab-btn" data-tab="users">用户管理</button>
+        <button class="btn btn-outline admin-tab-btn" data-tab="homepage">主页设置</button>
+        <button class="btn btn-outline admin-tab-btn" data-tab="codes">注册验证码</button>
+    </div>
+
+    <!-- 用户管理 -->
+    <div class="admin-tab-panel" id="tab-users">
     <div class="admin-table-wrap">
         <table class="admin-table">
             <thead>
@@ -35,6 +43,37 @@
                 <tr><td colspan="7">加载中...</td></tr>
             </tbody>
         </table>
+    </div>
+    </div>
+
+    <!-- 主页设置 -->
+    <div class="admin-tab-panel" id="tab-homepage" style="display:none;">
+        <div style="max-width:640px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:24px;">
+            <h3 style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px;">主页最大文字设置</h3>
+            <p style="font-size:13px;color:var(--text-2);margin-bottom:16px;">修改后主页（首页）最大的标题文字立即生效，无需登录 PythonAnywhere。支持使用 \n 换行。</p>
+            <textarea id="siteTitleInput" class="form-input" rows="3" style="width:100%;margin-bottom:12px;" placeholder="输入主页大标题，例如：你的私有云盘\n分享与社交"></textarea>
+            <button id="saveSiteTitleBtn" class="btn btn-primary">保存并生效</button>
+        </div>
+    </div>
+
+    <!-- 注册验证码 -->
+    <div class="admin-tab-panel" id="tab-codes" style="display:none;">
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>邮箱</th>
+                        <th>验证码</th>
+                        <th>状态</th>
+                        <th>发送时间</th>
+                    </tr>
+                </thead>
+                <tbody id="codesTableBody">
+                    <tr><td colspan="5">加载中...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -246,6 +285,94 @@
         if (e.target === document.getElementById('filesModal')) {
             document.getElementById('filesModal').style.display = 'none';
         }
+    });
+
+    // ===== 主页设置 =====
+    async function loadSiteTitle() {
+        try {
+            const res = await fetch('/api/admin/settings');
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('siteTitleInput').value = data.site_title.replace(/<br>/g, '\n');
+            }
+        } catch (err) {
+            showToast('读取主页标题失败', true);
+        }
+    }
+
+    document.getElementById('saveSiteTitleBtn').addEventListener('click', async () => {
+        const val = document.getElementById('siteTitleInput').value.trim();
+        if (!val) {
+            showToast('标题不能为空', true);
+            return;
+        }
+        try {
+            const res = await fetch('/api/admin/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ site_title: val })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('主页标题已更新');
+            } else {
+                showToast(data.error, true);
+            }
+        } catch (err) {
+            showToast('保存失败', true);
+        }
+    });
+
+    // ===== 注册验证码 =====
+    async function loadCodes() {
+        const tbody = document.getElementById('codesTableBody');
+        tbody.innerHTML = '<tr><td colspan="5">加载中...</td></tr>';
+        try {
+            const res = await fetch('/api/admin/verification_codes?limit=50');
+            const data = await res.json();
+            if (!data.success) {
+                tbody.innerHTML = `<tr><td colspan="5">加载失败: ${data.error}</td></tr>`;
+                return;
+            }
+            if (!data.codes.length) {
+                tbody.innerHTML = '<tr><td colspan="5">暂无验证码记录</td></tr>';
+                return;
+            }
+            let html = '';
+            for (let c of data.codes) {
+                const usedTxt = c.used ? '已使用' : '未使用';
+                html += `<tr>
+                    <td>${c.id}</td>
+                    <td>${escapeHtml(c.email)}</td>
+                    <td><strong style="letter-spacing:2px;">${escapeHtml(c.code)}</strong></td>
+                    <td>${usedTxt}</td>
+                    <td>${c.created_at}</td>
+                </tr>`;
+            }
+            tbody.innerHTML = html;
+        } catch (err) {
+            tbody.innerHTML = '<tr><td colspan="5">加载失败</td></tr>';
+        }
+    }
+
+    // ===== Tab 切换 =====
+    document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.getAttribute('data-tab');
+            document.querySelectorAll('.admin-tab-btn').forEach(b => {
+                if (b === btn) {
+                    b.classList.remove('btn-outline');
+                    b.classList.add('btn-primary');
+                } else {
+                    b.classList.remove('btn-primary');
+                    b.classList.add('btn-outline');
+                }
+            });
+            document.querySelectorAll('.admin-tab-panel').forEach(p => p.style.display = 'none');
+            document.getElementById('tab-' + tab).style.display = '';
+            if (tab === 'homepage') loadSiteTitle();
+            if (tab === 'codes') loadCodes();
+        });
     });
 
     function escapeHtml(str) {

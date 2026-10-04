@@ -11,12 +11,17 @@
 
     <!-- Hero区域 -->
     <div style="padding: 96px 24px; text-align: center;">
-        <h1 style="font-size: 48px; font-weight: 800; color: var(--text); margin-bottom: 16px; letter-spacing: -0.03em; line-height: 1.1;">
-            你的私有云盘<br>分享与社交
+        <h1 id="siteMainTitle" style="font-size: 48px; font-weight: 800; color: var(--text); margin-bottom: 16px; letter-spacing: -0.03em; line-height: 1.1;">
+            {{ site_title|safe }}
         </h1>
         <p style="font-size: 18px; color: var(--text-2); max-width: 600px; margin: 0 auto 40px; line-height: 1.6;">
             安全存储、轻松分享、与好友互动。星币系统、社区公开文件、实时聊天，完全免费。
         </p>
+        <!-- 主页搜索框：与社区页搜索框一致，居中对齐 -->
+        <div style="display: flex; gap: 12px; justify-content: center; max-width: 400px; margin: 0 auto 40px;">
+            <input type="text" id="homeSearchInput" class="form-input" placeholder="搜索文件或用户..." style="flex:1;" onkeypress="if(event.key==='Enter')document.getElementById('homeSearchBtn').click()">
+            <button id="homeSearchBtn" class="btn btn-primary">搜索</button>
+        </div>
         <div style="display: flex; gap: 12px; justify-content: center;">
             <a href="/login" class="btn btn-primary" style="padding: 12px 28px; font-size: 16px;">开始使用</a>
             <a href="/community" class="btn btn-outline" style="padding: 12px 28px; font-size: 16px;">浏览社区</a>
@@ -72,5 +77,11 @@
     <footer class="footer">
         <p>© 2026 星云盘 · 分享与社交云存储</p>
     </footer>
+    <script>
+        document.getElementById('homeSearchBtn').addEventListener('click', function () {
+            const q = document.getElementById('homeSearchInput').value.trim();
+            window.location.href = '/community' + (q ? '?q=' + encodeURIComponent(q) : '');
+        });
+    </script>
 </body>
 </html>

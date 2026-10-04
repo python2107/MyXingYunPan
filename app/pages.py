@@ -12,7 +12,10 @@ pages_bp = Blueprint('pages', __name__)
 # ==================== 页面渲染 ====================
 @pages_bp.route('/')
 def index():
-    return render_template('index.html')
+    db = get_db()
+    row = db.execute("SELECT value FROM settings WHERE key = 'site_title'").fetchone()
+    site_title = row['value'] if row else '你的私有云盘<br>分享与社交'
+    return render_template('index.html', site_title=site_title)
 
 @pages_bp.route('/login')
 def login_page():
@@ -86,9 +89,10 @@ def community_page():
         'owner': {'username': r['owner']},
         'views': 0,
         'description': '',
-        'download_url': url_for('pages.numfile', num=r['id'])
+        'download_url': url_for('pages.numfile', num=r['id']),
+        'category': Path(r['filename']).suffix.lstrip('.').upper() or 'FILE'
     } for r in records]
-    return render_template('community.html', files=files)
+    return render_template('community.html', files=files, q=q)
 
 @pages_bp.route('/admin')
 def admin_panel():

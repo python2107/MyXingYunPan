@@ -86,6 +86,7 @@
         chatAvatarEl.textContent = String(name).charAt(0).toUpperCase();
         messageInputEl.disabled = false;
         sendBtnEl.disabled = false;
+        document.getElementById('fileBtn').disabled = false;
         // 高亮选中项
         friendListEl.querySelectorAll('.friend-item').forEach(function (item) {
             item.classList.toggle('active', parseInt(item.getAttribute('data-id'), 10) === id);
@@ -156,6 +157,75 @@
         }
     }
 
+    // ---------- 发送云盘文件 ----------
+    const fileModalEl = document.getElementById('fileModal');
+    const mineFileListEl = document.getElementById('mineFileList');
+    const publicFileListEl = document.getElementById('publicFileList');
+
+    function openFileModal() {
+        if (!currentFriendId) return;
+        mineFileListEl.innerHTML = '<div class="msg-empty" style="padding:16px;">加载中...</div>';
+        publicFileListEl.innerHTML = '';
+        fileModalEl.style.display = 'flex';
+        loadAvailableFiles();
+    }
+
+    async function loadAvailableFiles() {
+        try {
+            const res = await fetch('/api/chat/available_files');
+            const data = await res.json();
+            if (!data.success) { mineFileListEl.innerHTML = '<div class="msg-empty" style="padding:16px;">加载失败</div>'; return; }
+            renderFileChoices(mineFileListEl, data.mine, '我');
+            renderFileChoices(publicFileListEl, data.public, null);
+            if (!data.public.length) publicFileListEl.innerHTML = '<div class="msg-empty" style="padding:16px;">暂无他人公开文件</div>';
+        } catch (e) {
+            mineFileListEl.innerHTML = '<div class="msg-empty" style="padding:16px;">加载失败</div>';
+        }
+    }
+
+    function renderFileChoices(container, files, ownerLabel) {
+        if (!files || !files.length) {
+            container.innerHTML = '<div class="msg-empty" style="padding:16px;">' + (ownerLabel === null ? '' : '暂无文件') + '</div>';
+            return;
+        }
+        let html = '';
+        files.forEach(function (f) {
+            html +=
+                '<div class="friend-item file-choice" data-id="' + f.id + '">' +
+                '<div class="friend-info" style="min-width:0;">' +
+                '<div class="friend-name" style="word-break:break-all;">' + escapeHtml(f.name) + ' (' + escapeHtml(f.size_human) + ')</div>' +
+                '<div class="friend-status">' + (f.owner ? escapeHtml(f.owner) : '我') + '</div>' +
+                '</div>' +
+                '</div>';
+        });
+        container.innerHTML = html;
+        container.querySelectorAll('.file-choice').forEach(function (item) {
+            item.addEventListener('click', function () {
+                sendFileMessage(parseInt(item.getAttribute('data-id'), 10));
+            });
+        });
+    }
+
+    async function sendFileMessage(fileId) {
+        try {
+            const res = await fetch('/api/messages/send_file', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ receiver_id: currentFriendId, file_id: fileId, type: 'file', content: '' })
+            });
+            const data = await res.json();
+            if (data.success) {
+                fileModalEl.style.display = 'none';
+                loadMessages();
+                alert('文件已发送');
+            } else {
+                alert(data.error || '发送失败');
+            }
+        } catch (e) {
+            alert('发送失败');
+        }
+    }
+
     // ---------- 轮询新消息 ----------
     function startPolling() {
         if (pollTimer) clearInterval(pollTimer);
@@ -165,7 +235,15 @@
     }
 
     // ---------- 事件绑定 ----------
+    const fileBtnEl = document.getElementById('fileBtn');
     sendBtnEl.addEventListener('click', sendMessage);
+    fileBtnEl.addEventListener('click', openFileModal);
+    document.getElementById('closeFileModalBtn').addEventListener('click', function () {
+        fileModalEl.style.display = 'none';
+    });
+    window.addEventListener('click', function (e) {
+        if (e.target === fileModalEl) fileModalEl.style.display = 'none';
+    });
     messageInputEl.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') sendMessage();
     });

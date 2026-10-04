@@ -186,7 +186,7 @@
     }
 
     window.downloadFile = function(fileId) {
-        window.open('/download/' + fileId, '_blank');
+        window.open('/numfile/' + fileId + '?download=1', '_blank');
     };
 
     window.togglePublic = async (fileId, currentStatus) => {

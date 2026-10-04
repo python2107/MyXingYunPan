@@ -176,10 +176,12 @@ def send_file_message():
         return jsonify({'success': False, 'error': '不是好友关系'}), 403
 
     db = get_db()
-    # 检查文件是否存在，且属于当前用户（只能发送自己的文件）
+    # 检查文件是否存在；只能发送自己的文件或别人的公开文件
     file_rec = db.execute('SELECT id, user_id, filename, is_public FROM files WHERE id = ?', (file_id,)).fetchone()
-    if not file_rec or file_rec['user_id'] != session['user_id']:
-        return jsonify({'success': False, 'error': '文件不存在或无权发送'}), 404
+    if not file_rec:
+        return jsonify({'success': False, 'error': '文件不存在'}), 404
+    if file_rec['user_id'] != session['user_id'] and file_rec['is_public'] != 1:
+        return jsonify({'success': False, 'error': '只能发送云盘中的文件或别人的公开文件'}), 403
 
     # 确保消息类型正确（如果是图片且文件是图片格式，可以标记为image）
     import mimetypes
@@ -195,3 +197,35 @@ def send_file_message():
     )
     db.commit()
     return jsonify({'success': True, 'message': '文件已发送'})
+
+# ==================== 获取聊天可选文件（自己的文件 + 别人的公开文件）====================
+@social_bp.route('/chat/available_files')
+def chat_available_files():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': '未登录'}), 401
+    uid = session['user_id']
+    db = get_db()
+    # 自己的全部文件
+    mine = db.execute(
+        'SELECT id, filename, size_bytes FROM files WHERE user_id = ? ORDER BY created_at DESC LIMIT 200',
+        (uid,)
+    ).fetchall()
+    # 别人的公开文件（排除自己的，避免重复）
+    public = db.execute("""
+        SELECT f.id, f.filename, f.size_bytes, u.username AS owner
+        FROM files f JOIN users u ON f.user_id = u.id
+        WHERE f.is_public = 1 AND f.user_id != ?
+        ORDER BY f.created_at DESC LIMIT 200
+    """, (uid,)).fetchall()
+    def wrap(r, owner=None):
+        return {
+            'id': r['id'],
+            'name': r['filename'],
+            'size_human': human_readable_size(r['size_bytes']),
+            'owner': owner if owner is not None else '我'
+        }
+    return jsonify({
+        'success': True,
+        'mine': [wrap(r) for r in mine],
+        'public': [wrap(r, r['owner']) for r in public]
+    })
