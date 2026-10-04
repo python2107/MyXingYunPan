@@ -1,4 +1,5 @@
 # app/auth.py
+import random
 from flask import Blueprint, request, jsonify, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timezone
@@ -7,6 +8,14 @@ from app.models import get_db, get_user_folder, update_user_coins
 from app.email_utils import send_email, generate_verification_code
 
 auth_bp = Blueprint('auth', __name__)
+
+# ==================== 人机验证（算术题） ====================
+@auth_bp.route('/captcha', methods=['GET'])
+def get_captcha():
+    a = random.randint(1, 9)
+    b = random.randint(1, 9)
+    session['captcha_answer'] = str(a + b)
+    return jsonify({'success': True, 'question': f'{a} + {b} = ?'})
 
 # ==================== 发送验证码（使用 UTC 时间存储） ====================
 @auth_bp.route('/send_code', methods=['POST'])
@@ -48,6 +57,18 @@ def register():
         return jsonify({'success': False, 'error': '邮箱、验证码和密码不能为空'}), 400
     if len(password) < 6:
         return jsonify({'success': False, 'error': '密码至少6位'}), 400
+
+    # 校验条款同意
+    if not data.get('agree_terms'):
+        return jsonify({'success': False, 'error': '请阅读并同意《用户协议》'}), 400
+    if not data.get('agree_privacy'):
+        return jsonify({'success': False, 'error': '请阅读并同意《隐私政策》'}), 400
+
+    # 校验人机验证
+    captcha_answer = session.get('captcha_answer')
+    if not captcha_answer or str(data.get('captcha', '')).strip() != str(captcha_answer):
+        return jsonify({'success': False, 'error': '人机验证失败，请刷新后重试'}), 400
+    session.pop('captcha_answer', None)
 
     db = get_db()
 

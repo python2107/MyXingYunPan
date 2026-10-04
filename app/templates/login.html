@@ -14,6 +14,10 @@
         .code-row .form-input { flex: 1; }
         .code-row .btn { white-space: nowrap; padding: 0 16px; font-size: 13px; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .terms-group { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 12px; }
+        .terms-label { display: flex; align-items: center; gap: 8px; color: var(--text-2); font-size: 13px; cursor: pointer; }
+        .terms-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+        .terms-label a { color: var(--accent); }
     </style>
 </head>
 <body>
@@ -67,6 +71,24 @@
                     <label class="form-label">确认密码</label>
                     <input type="password" id="regConfirmPassword" class="form-input" placeholder="请再次输入密码">
                 </div>
+                <div class="form-group">
+                    <label class="form-label">人机验证</label>
+                    <div class="code-row">
+                        <input type="text" id="regCaptcha" class="form-input" placeholder="计算结果">
+                        <span id="captchaQuestion" class="btn btn-outline" style="display:flex;align-items:center;padding:0 16px;font-size:14px;">加载中...</span>
+                        <button type="button" class="btn btn-outline" onclick="refreshCaptcha()" style="padding:0 12px;font-size:13px;">换一题</button>
+                    </div>
+                </div>
+                <div class="form-group terms-group">
+                    <label class="terms-label">
+                        <input type="checkbox" id="regAgreeTerms">
+                        <span>我已阅读并同意 <a href="/terms" target="_blank">《用户协议》</a></span>
+                    </label>
+                    <label class="terms-label">
+                        <input type="checkbox" id="regAgreePrivacy">
+                        <span>我已阅读并同意 <a href="/privacy" target="_blank">《隐私政策》</a></span>
+                    </label>
+                </div>
                 <div id="regError" class="error-msg"></div>
                 <button class="btn btn-primary btn-block" onclick="doRegister()">注册</button>
             </div>
@@ -80,6 +102,21 @@
 <script>
 let codeCountdown = 0;
 let codeTimer = null;
+
+function refreshCaptcha() {
+    const q = document.getElementById('captchaQuestion');
+    q.textContent = '加载中...';
+    fetch('/api/captcha').then(r => r.json()).then(data => {
+        if (data.success) {
+            q.textContent = data.question;
+        }
+    }).catch(() => {
+        q.textContent = '加载失败，点击重试';
+    });
+}
+
+// 页面加载时获取人机验证题目
+refreshCaptcha();
 
 function doLogin() {
     const username = document.getElementById('loginUsername').value;
@@ -160,10 +197,13 @@ function doRegister() {
     const code = document.getElementById('regCode').value;
     const password = document.getElementById('regPassword').value;
     const confirmPassword = document.getElementById('regConfirmPassword').value;
+    const captcha = document.getElementById('regCaptcha').value;
+    const agreeTerms = document.getElementById('regAgreeTerms').checked;
+    const agreePrivacy = document.getElementById('regAgreePrivacy').checked;
     const errorEl = document.getElementById('regError');
     errorEl.style.color = '#ff6b6b';
     errorEl.style.display = 'none';
-    if (!username || !email || !code || !password) {
+    if (!username || !email || !code || !password || !captcha) {
         errorEl.textContent = '请填写所有字段';
         errorEl.style.display = 'block';
         return;
@@ -178,10 +218,15 @@ function doRegister() {
         errorEl.style.display = 'block';
         return;
     }
+    if (!agreeTerms || !agreePrivacy) {
+        errorEl.textContent = '请阅读并同意用户协议和隐私政策';
+        errorEl.style.display = 'block';
+        return;
+    }
     fetch('/api/register', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({username, email, code, password})
+        body: JSON.stringify({username, email, code, password, captcha, agree_terms: agreeTerms, agree_privacy: agreePrivacy})
     }).then(r => r.json()).then(data => {
         if (data.success) {
             alert('注册成功，请登录');
@@ -190,6 +235,9 @@ function doRegister() {
         } else {
             errorEl.textContent = data.error || data.message || '注册失败';
             errorEl.style.display = 'block';
+            if ((data.error || '').indexOf('人机验证') >= 0) {
+                refreshCaptcha();
+            }
         }
     }).catch(() => {
         errorEl.textContent = '网络错误，请重试';
