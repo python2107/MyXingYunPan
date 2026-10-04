@@ -57,7 +57,38 @@ def friends_page():
 
 @pages_bp.route('/community')
 def community_page():
-    return render_template('community.html')
+    db = get_db()
+    q = request.args.get('q', '').strip()
+    if q:
+        like_pattern = f'%{q}%'
+        records = db.execute("""
+            SELECT f.id, f.filename, f.size_bytes, f.likes, f.collections, f.created_at, u.username AS owner
+            FROM files f JOIN users u ON f.user_id = u.id
+            WHERE f.is_public = 1 AND (f.filename LIKE ? OR u.username LIKE ?)
+            ORDER BY f.likes DESC, f.created_at DESC LIMIT 100
+        """, (like_pattern, like_pattern)).fetchall()
+    else:
+        records = db.execute("""
+            SELECT f.id, f.filename, f.size_bytes, f.likes, f.collections, f.created_at, u.username AS owner
+            FROM files f JOIN users u ON f.user_id = u.id
+            WHERE f.is_public = 1
+            ORDER BY f.likes DESC, f.created_at DESC LIMIT 100
+        """).fetchall()
+    files = [{
+        'id': r['id'],
+        'name': r['filename'],
+        'size': r['size_bytes'],
+        'size_human': human_readable_size(r['size_bytes']),
+        'likes': r['likes'],
+        'collections': r['collections'],
+        'created_at': r['created_at'],
+        'upload_time': r['created_at'],
+        'owner': {'username': r['owner']},
+        'views': 0,
+        'description': '',
+        'download_url': url_for('pages.numfile', num=r['id'])
+    } for r in records]
+    return render_template('community.html', files=files)
 
 @pages_bp.route('/admin')
 def admin_panel():

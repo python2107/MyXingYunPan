@@ -27,15 +27,17 @@
             {% for file in files %}
             <div class="repo-item">
                 <div class="repo-name">
-                    <a href="/file/{{ file.id }}">{{ file.name }}</a>
+                    <a href="/numfile/{{ file.id }}">{{ file.name }}</a>
                     <span style="float: right; font-size: 12px; color: var(--text-2);">{{ file.upload_time[:10] if file.upload_time else '' }}</span>
                 </div>
                 <div class="repo-desc">{{ file.description or '暂无描述' }}</div>
                 <div class="repo-meta">
                     <span> {{ file.owner.username if file.owner else '匿名' }}</span>
-                    <span> {{ file.size // 1024 if file.size else 0 }} KB</span>
+                    <span> {{ file.size_human or 0 }}</span>
                     <span> {{ file.likes or 0 }} 点赞</span>
-                    <span>👁️ {{ file.views or 0 }} 浏览</span>
+                    <span> {{ file.collections or 0 }} 收藏</span>
+                    <span> {{ file.views or 0 }} 浏览</span>
+                    <span><a href="/numfile/{{ file.id }}?download=1">下载</a></span>
                 </div>
             </div>
             {% endfor %}
