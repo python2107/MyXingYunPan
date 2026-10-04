@@ -183,7 +183,7 @@
             return;
         }
         try {
-            const res = await fetch(`/api/users/search?query=${encodeURIComponent(query)}`);
+            const res = await fetch(`/api/friends/search?q=${encodeURIComponent(query)}`);
             const data = await res.json();
             const container = document.getElementById('searchResultsContainer');
             if (data.success && data.users.length) {
