@@ -28,7 +28,7 @@ def admin_required(f):
 def admin_users():
     db = get_db()
     users = db.execute("""
-        SELECT id, username, password_hash, is_admin, created_at, coins, capacity_mb
+        SELECT id, username, email, password_hash, is_admin, created_at, coins, capacity_mb
         FROM users
         ORDER BY id
     """).fetchall()
@@ -38,7 +38,7 @@ def admin_users():
         user_list.append({
             'id': u['id'],
             'username': u['username'],
-            'password_hash': u['password_hash'],
+            'email': u['email'],
             'is_admin': bool(u['is_admin']),
             'created_at': u['created_at'],
             'coins': u['coins'],
